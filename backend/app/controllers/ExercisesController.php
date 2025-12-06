@@ -6,7 +6,7 @@ require_once __DIR__ . '/../utils/functions.php';
 
 function createExercise($content) {
     global $db;
-
+    
     if (!$content) {
         http_response_code(400);
         echo json_encode(["error" => "Content is required"]);
@@ -31,7 +31,7 @@ function createExercise($content) {
 
 function getExerciseInfo($exercise_sub) {
     global $db;
-    
+
     $stmt = $db->prepare("SELECT * FROM exercises WHERE sub = :sub");
     $stmt->execute([':sub' => $exercise_sub]);
     $exercise = $stmt->fetch();
@@ -41,6 +41,8 @@ function getExerciseInfo($exercise_sub) {
         echo json_encode(["error" => "Exercise not found"]);
         return;
     }
+
+    unset($exercise->id);
 
     echo json_encode($exercise);
 }

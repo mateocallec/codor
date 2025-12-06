@@ -28,29 +28,29 @@ function callController($file, $function, $params = []) {
 $routeKey = "$method $path";
 
 // Routes dynamiques
-if (preg_match('#^/v1/exercises/([^/]+)/info$#', $path, $matches)) {
-    $routeKey = "$method /v1/exercises/{exercise_sub}/info";
+if (preg_match('#^/v1/exercise/([^/]+)/info$#', $path, $matches)) {
+    $routeKey = "$method /v1/exercise/{exercise_sub}/info";
     $params = [$matches[1]];
 }
 
-if (preg_match('#^/v1/exercises/([^/]+)/update$#', $path, $matches)) {
-    $routeKey = "$method /v1/exercises/{exercise_sub}/update";
+if (preg_match('#^/v1/exercise/([^/]+)/update$#', $path, $matches)) {
+    $routeKey = "$method /v1/exercise/{exercise_sub}/update";
     $params = [$matches[1], $_POST];
 }
 
-if (preg_match('#^/v1/exercises/([^/]+)/delete$#', $path, $matches)) {
-    $routeKey = "$method /v1/exercises/{exercise_sub}/delete";
+if (preg_match('#^/v1/exercise/([^/]+)/delete$#', $path, $matches)) {
+    $routeKey = "$method /v1/exercise/{exercise_sub}/delete";
     parse_str(file_get_contents("php://input"), $deleteParams);
     $params = [$matches[1], $deleteParams];
 }
 
-if (preg_match('#^/v1/exercises/([^/]+)/returns$#', $path, $matches)) {
-    $routeKey = "$method /v1/exercises/{exercise_sub}/returns";
+if (preg_match('#^/v1/exercise/([^/]+)/returns$#', $path, $matches)) {
+    $routeKey = "$method /v1/exercise/{exercise_sub}/returns";
     $params = [$matches[1]];
 }
 
-if (preg_match('#^/v1/exercises/([^/]+)/return/([^/]+)$#', $path, $matches)) {
-    $routeKey = "$method /v1/exercises/{exercise_sub}/return/{user_sub}";
+if (preg_match('#^/v1/exercise/([^/]+)/return/([^/]+)$#', $path, $matches)) {
+    $routeKey = "$method /v1/exercise/{exercise_sub}/return/{user_sub}";
     $params = [$matches[1], $matches[2]];
 }
 
@@ -71,23 +71,23 @@ switch ($routeKey) {
         callController('controllers/ExercisesController.php', 'createExercise', [$_POST['content'] ?? null]);
         break;
 
-    case 'GET /v1/exercises/{exercise_sub}/info':
+    case 'GET /v1/exercise/{exercise_sub}/info':
         callController('controllers/ExercisesController.php', 'getExerciseInfo', $params);
         break;
 
-    case 'POST /v1/exercises/{exercise_sub}/update':
+    case 'POST /v1/exercise/{exercise_sub}/update':
         callController('controllers/ExercisesController.php', 'updateExercise', $params);
         break;
 
-    case 'DELETE /v1/exercises/{exercise_sub}/delete':
+    case 'DELETE /v1/exercise/{exercise_sub}/delete':
         callController('controllers/ExercisesController.php', 'deleteExercise', $params);
         break;
 
-    case 'GET /v1/exercises/{exercise_sub}/returns':
+    case 'GET /v1/exercise/{exercise_sub}/returns':
         callController('controllers/ExercisesController.php', 'getExerciseReturns', $params);
         break;
 
-    case 'GET /v1/exercises/{exercise_sub}/return/{user_sub}':
+    case 'GET /v1/exercise/{exercise_sub}/return/{user_sub}':
         callController('controllers/ExercisesController.php', 'getExerciseReturnByUser', $params);
         break;
 

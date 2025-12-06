@@ -30,7 +30,7 @@ function createUser($academic_id, $exercise_sub) {
     }
 
     $exercise_id = $exercise->id;
-    $sub = bin2hex(random_bytes(8)); // identifiant unique pour l'utilisateur
+    $sub = str_random(32); // identifiant unique pour l'utilisateur
     $creation_time = time();
 
     $stmt = $db->prepare("

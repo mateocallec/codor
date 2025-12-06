@@ -16,14 +16,16 @@ COPY apache.conf /etc/apache2/sites-available/000-default.conf
 # Copy entrypoint script
 COPY entrypoint.sh /usr/local/bin/entrypoint.sh
 
-# Set permissions
-#RUN chown -R www-data:www-data /var/www/html \
-#    && chmod -R 755 /var/www/html \
-#    && chmod +x /usr/local/bin/entrypoint.sh
+# Add storage mounting point
+RUN mkdir -p /storage
 
-# Only for dev
+# Set permissions
+#RUN chown -R www-data:www-data /var/www/html
 RUN chmod -R 755 /var/www/html
 RUN chmod +x /usr/local/bin/entrypoint.sh
+
+RUN chown -R www-data:www-data /storage
+RUN chmod -R 777 /storage
 
 # Expose HTTP port
 EXPOSE 80
