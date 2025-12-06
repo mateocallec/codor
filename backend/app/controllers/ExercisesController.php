@@ -36,8 +36,7 @@ function createExercise($content) {
 
     echo json_encode([
         "sub" => $sub,
-        "creation_time" => $creation_time,
-        "content" => $content
+        "creation_time" => $creation_time
     ]);
 }
 
@@ -97,7 +96,7 @@ function deleteExercise($exercise_sub, $params = []) {
     echo json_encode(["message" => "Exercise $exercise_sub deleted"]);
 }
 
-function getExerciseReturns($exercise_sub) {
+function getExerciseParticipants($exercise_sub) {
     global $db;
 
     // Retourne tous les utilisateurs associés à l'exercise
@@ -105,10 +104,16 @@ function getExerciseReturns($exercise_sub) {
     $stmt->execute([':sub' => $exercise_sub]);
     $users = $stmt->fetchAll();
 
-    echo json_encode($users);
+    $usersList = [];
+
+    foreach ($users as $user) {
+        array_push($usersList, $user->sub);
+    }
+
+    echo json_encode($usersList);
 }
 
-function getExerciseReturnByUser($exercise_sub, $user_sub) {
+function getExerciseParticipantByUser($exercise_sub, $user_sub) {
     global $db;
 
     $stmt = $db->prepare("
@@ -130,5 +135,11 @@ function getExerciseReturnByUser($exercise_sub, $user_sub) {
         return;
     }
 
-    echo json_encode($result);
+    $content = read_storage_file('returns', $user_sub);
+
+    echo json_encode([
+        'sub' => $result->sub,
+        'academic_id' => $result->academic_id,
+        'content' => $content ? $content : null,
+    ]);
 }

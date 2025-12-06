@@ -34,9 +34,9 @@ function createUser($academic_id, $exercise_sub) {
     do {
         $sub = str_random(32);
 
-        $req = $db->prepare("SELECT * FROM users WHERE sub = :sub");
-        $req->execute([':sub' => $sub]);
-    } while($sub->fetch());
+        $stmt = $db->prepare("SELECT * FROM users WHERE sub = :sub");
+        $stmt->execute([':sub' => $sub]);
+    } while($stmt->fetch());
 
     $creation_time = time();
 

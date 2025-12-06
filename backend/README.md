@@ -6,34 +6,62 @@ For users, notes & exercise storage
 
 `POST /v1/exercises/new` -> content: string
 
----
-
-`GET /v1/exercise/{exercise_sub}/info`
-
----
-
-`POST /v1/exercise/{exercise_sub}/update` -> content: string
+```json
+{"sub": string, "creation_time": int}
+```
 
 ---
 
-`DELETE /v1/exercise/{exercise_sub}/delete`
+`GET /v1/exercise/{exercise_id}/info`
+
+```json
+{"sub": string, "creation_time": int, "content": string}
+```
 
 ---
 
-`GET /v1/exercise/{exercise_sub}/returns`
+`POST /v1/exercise/{exercise_id}/update` -> content: string
 
 ---
 
-`GET /v1/exercise/{exercise_sub}/return/{user_sub}`
+`DELETE /v1/exercise/{exercise_id}/delete`
 
 ---
 
-`POST /v1/users/new` -> content: string
+`GET /v1/exercise/{exercise_id}/participants`
+
+```json
+["sub1", "sub2", ...]
+```
 
 ---
 
-`GET /v1/user/{user_sub}/info`
+`GET /v1/exercise/{exercise_id}/participant/{user_id}`
+
+```json
+{"sub": string, "academic_id": int,"content": ?string}
+```
 
 ---
 
-`DELETE /v1/user/{user_sub}/delete`
+`POST /v1/users/new` -> exercise_id: string, academic_id: string
+
+```json
+{"sub": string, "exercise_sub": string, "academic_id": string, "creation_time": int}
+```
+
+---
+
+`GET /v1/user/{user_id}/info`
+
+```json
+{"sub": string, "exercise_id": string, "creation_time": int, "academic_id": string, "note": ?int}
+```
+
+---
+
+`DELETE /v1/user/{user_id}/delete`
+
+---
+
+`POST /v1/user/{user_id}/note` -> note: int (>= 0 && <= 100)

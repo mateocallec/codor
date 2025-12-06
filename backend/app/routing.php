@@ -44,13 +44,13 @@ if (preg_match('#^/v1/exercise/([^/]+)/delete$#', $path, $matches)) {
     $params = [$matches[1], $deleteParams];
 }
 
-if (preg_match('#^/v1/exercise/([^/]+)/returns$#', $path, $matches)) {
-    $routeKey = "$method /v1/exercise/{exercise_sub}/returns";
+if (preg_match('#^/v1/exercise/([^/]+)/participants$#', $path, $matches)) {
+    $routeKey = "$method /v1/exercise/{exercise_sub}/participants";
     $params = [$matches[1]];
 }
 
-if (preg_match('#^/v1/exercise/([^/]+)/return/([^/]+)$#', $path, $matches)) {
-    $routeKey = "$method /v1/exercise/{exercise_sub}/return/{user_sub}";
+if (preg_match('#^/v1/exercise/([^/]+)/participant/([^/]+)$#', $path, $matches)) {
+    $routeKey = "$method /v1/exercise/{exercise_sub}/participant/{user_sub}";
     $params = [$matches[1], $matches[2]];
 }
 
@@ -83,12 +83,12 @@ switch ($routeKey) {
         callController('controllers/ExercisesController.php', 'deleteExercise', $params);
         break;
 
-    case 'GET /v1/exercise/{exercise_sub}/returns':
-        callController('controllers/ExercisesController.php', 'getExerciseReturns', $params);
+    case 'GET /v1/exercise/{exercise_sub}/participants':
+        callController('controllers/ExercisesController.php', 'getExerciseParticipants', $params);
         break;
 
-    case 'GET /v1/exercise/{exercise_sub}/return/{user_sub}':
-        callController('controllers/ExercisesController.php', 'getExerciseReturnByUser', $params);
+    case 'GET /v1/exercise/{exercise_sub}/participant/{user_sub}':
+        callController('controllers/ExercisesController.php', 'getExerciseParticipantByUser', $params);
         break;
 
     case 'POST /v1/users/new':
