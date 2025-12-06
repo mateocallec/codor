@@ -6,7 +6,7 @@ import { Code, GraduationCap } from "lucide-react";
 
 const Index = () => {
   return (
-    <div className="flex h-screen flex-col bg-background">
+    <div className="flex h-screen flex-col">
       {/* Header */}
       <header className="flex items-center justify-between border-b border-border px-6 py-3 bg-secondary">
         <div className="flex items-center gap-3">

@@ -85,6 +85,27 @@ console.log(result);`);
     setSteps([...steps, newStep]);
   };
 
+  const addStepAfter = (afterId: number) => {
+    const afterIndex = steps.findIndex(s => s.id === afterId);
+    const afterStep = steps[afterIndex];
+    const nextStep = steps[afterIndex + 1];
+    
+    // Calculate appropriate line numbers between the two steps
+    const newLineStart = afterStep.lineEnd + 1;
+    const newLineEnd = nextStep ? Math.min(newLineStart, nextStep.lineStart - 1) : newLineStart;
+    
+    const newStep: Step = {
+      id: Math.max(...steps.map(s => s.id), 0) + 1,
+      description: "",
+      lineStart: newLineStart <= newLineEnd ? newLineStart : afterStep.lineEnd,
+      lineEnd: newLineStart <= newLineEnd ? newLineEnd : afterStep.lineEnd,
+    };
+    const newSteps = [...steps];
+    newSteps.splice(afterIndex + 1, 0, newStep);
+    setSteps(newSteps);
+    setEditingStep(newStep.id);
+  };
+
   const getStepColor = (stepId: number) => {
     const colors = [
       { bg: 'bg-purple-500/10', border: 'border-purple-500', text: 'text-purple-500', line: 'bg-purple-500' },
@@ -118,7 +139,7 @@ console.log(result);`);
   const codeLines = code.split("\n");
 
   return (
-    <div className="flex h-screen flex-col bg-background">
+    <div className="flex h-screen flex-col">
       {/* Header */}
       <header className="border-b border-border bg-secondary px-6 py-4">
         <div className="flex items-center justify-between">
@@ -126,7 +147,7 @@ console.log(result);`);
             <Button
               variant="ghost"
               size="icon"
-              onClick={() => navigate("/")}
+              onClick={() => navigate("/teacher")}
               className="h-9 w-9"
             >
               <ArrowLeft className="h-5 w-5" />
@@ -275,7 +296,7 @@ console.log(result);`);
                 return (
                   <div key={step.id}>
                     <div
-                      className={`rounded-lg border-2 p-4 transition-all cursor-pointer ${
+                      className={`rounded-lg border-2 p-4 transition-all cursor-pointer backdrop-blur-md bg-white/40 dark:bg-slate-900/40 ${
                         selectedStep === step.id
                           ? `${color.border} ${color.bg}`
                           : hoveredStep === step.id
@@ -399,7 +420,7 @@ console.log(result);`);
                           type="button"
                           variant="ghost"
                           size="sm"
-                          onClick={addStep}
+                          onClick={() => addStepAfter(step.id)}
                           className="h-6 w-6 rounded-full p-0 hover:bg-primary/10"
                         >
                           <Plus className="h-4 w-4 text-primary" />
