@@ -1,0 +1,11 @@
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # Root URL
+    RewriteRule ^$ routing.php [L,QSA]
+
+    # Ignore existing files and directories
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteRule ^ routing.php [L,QSA]
+</IfModule>
