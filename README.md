@@ -1,22 +1,21 @@
-# GDG Linz
+# Hagenberger Fünfeck - DevFest Linz 2025 Project
 
-**Goal:** Win money!
+Created by the **Hagenberger Fünfeck** group for the **Google Developer Group DevFest Linz 2025**.
 
-Flow:
+## Overview
 
-1. Prof lädt fertiges Code-Beispiel hoch (python file)
-2. KI analysiert Code, zerlegt das in einzelne Aufgabenstellungen, um daraus eine Übung für SchülerInnen zu generieren
-3. Die SchülerInnen bekommen diese Aufgabe, ein Codefenster und ein Chatfenster, wo der KI-Tutor Tipps und Hilfestellungen geben kann
-4. Die SchülerInnen folgen der KI um das gegebene Übungs-Programm nachzubauen und dabei zu lernen.
-5. Der KI-Tutor überprüft den Code auf richtigkeit und vergibt Punkte
-6. Der Lehrer sieht die Bewertung und kann die Aufgabe überprüfen
+This software is designed for teachers to upload exercises and for students to complete them directly within the platform. It features:
 
-Lehrer-Upload Page (Nur Frontend)
-Student View mit IDE + ChatBot
-Lehrer Bewertungs-View (nur Frontend)
+- **Automatic grading**: AI evaluates the exercises and assigns grades instantly.
+- **Integrated chatbot**: Provides assistance and answers to student questions in real-time.
 
-KI muss:
-Code analysieren
-Aufgabe generieren (Schrittweise)
-Testcases erstellen
-Bewerten(anhand Testcases)
+## Features
+
+- Easy exercise upload for teachers
+- Real-time student interaction (with IDE)
+- AI-powered automatic grading
+- Chatbot support for students
+
+## License
+
+This project uses a **proprietary license** and is owned collectively by all contributors.
