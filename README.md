@@ -11,3 +11,15 @@ FLow:
 4. Die SchülerInnen folgen der KI um das gegebene Übungs-Programm nachzubauen und dabei zu lernen.
 5. Der KI-Tutor überprüft den Code auf richtigkeit und vergibt Punkte
 6. Der Lehrer sieht die Bewertung und kann die Aufgabe überprüfen
+
+
+Lehrer-Upload Page (Nur Frontend)
+Student View mit IDE + ChatBot 
+Lehrer Bewertungs-View (nur Frontend)
+
+
+KI muss:
+Code analysieren
+Aufgabe generieren (Schrittweise)
+Testcases erstellen
+Bewerten(anhand Testcases)
