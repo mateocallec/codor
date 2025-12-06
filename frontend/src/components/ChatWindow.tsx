@@ -1,8 +1,9 @@
 import { useState, useRef, useEffect } from "react";
-import { Send, Bot, User, HelpCircle } from "lucide-react";
+import { Send, Bot, User, HelpCircle, BookOpen, ChevronDown, ChevronUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Card, CardContent } from "@/components/ui/card";
 import { useAppContext } from "@/contexts/AppContext";
 import { streamChat, handleHighlightCode, getLLMHelp } from "@/lib/ai";
 
@@ -18,13 +19,26 @@ const ChatWindow = () => {
     exerciseDescription
   } = useAppContext();
   const [input, setInput] = useState("");
+  const [isExerciseExpanded, setIsExerciseExpanded] = useState(false);
+  const [shouldShowToggle, setShouldShowToggle] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const exerciseRef = useRef<HTMLParagraphElement>(null);
 
   useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
   }, [messages]);
+
+  // Check if exercise description exceeds 6 lines
+  useEffect(() => {
+    if (exerciseRef.current) {
+      const lineHeight = parseFloat(getComputedStyle(exerciseRef.current).lineHeight);
+      const height = exerciseRef.current.scrollHeight;
+      const lines = height / lineHeight;
+      setShouldShowToggle(lines > 6);
+    }
+  }, [exerciseDescription]);
 
   const handleGetHelp = async () => {
     if (isStreaming) return;
@@ -164,20 +178,55 @@ const ChatWindow = () => {
 
   return (
     <div className="flex h-full flex-col backdrop-blur-md bg-white/40 dark:bg-slate-900/40">
+      {/* Exercise Description */}
+      <Card className="m-4 border-primary/20 bg-gradient-to-r from-primary/5 to-blue-500/5">
+        <CardContent className="flex items-start gap-3 p-4">
+          <BookOpen className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
+          <div className="flex-1 min-w-0">
+            <h3 className="font-semibold text-foreground mb-2">Exercise</h3>
+            <div className="relative">
+              <p 
+                ref={exerciseRef}
+                className={`text-sm text-muted-foreground leading-relaxed whitespace-pre-line transition-all duration-300 ${
+                  !isExerciseExpanded && shouldShowToggle ? 'line-clamp-6' : ''
+                }`}
+              >
+                {exerciseDescription}
+              </p>
+              {shouldShowToggle && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setIsExerciseExpanded(!isExerciseExpanded)}
+                  className="mt-2 h-auto py-1 px-2 text-xs text-primary hover:text-primary hover:bg-primary/10"
+                >
+                  {isExerciseExpanded ? (
+                    <>
+                      <ChevronUp className="h-3 w-3 mr-1" />
+                      Show less
+                    </>
+                  ) : (
+                    <>
+                      <ChevronDown className="h-3 w-3 mr-1" />
+                      Show more
+                    </>
+                  )}
+                </Button>
+              )}
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Chat Header */}
-      <div className="flex items-center gap-3 border-b border-border px-4 py-3 backdrop-blur-lg bg-white/60 dark:bg-slate-900/60">
+      {/* <div className="flex items-center gap-3 border-b border-border px-4 py-3 backdrop-blur-lg bg-white/60 dark:bg-slate-900/60">
         <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary/20">
           <Bot className="h-5 w-5 text-primary" />
         </div>
         <div>
           <h2 className="font-semibold text-foreground">AI Tutor</h2>
-          <p className="text-xs text-muted-foreground">Always here to help</p>
         </div>
-        <div className="ml-auto flex items-center gap-1.5">
-          <span className="h-2 w-2 rounded-full bg-green-500" />
-          <span className="text-xs text-muted-foreground">Online</span>
-        </div>
-      </div>
+      </div> */}
 
       {/* Help Button Section */}
       <div className="border-b border-border bg-gradient-to-r from-amber-500/10 to-orange-500/10 p-4">

@@ -16,7 +16,7 @@ const Index = () => {
             <Code className="h-5 w-5 text-white" />
           </div>
           <div>
-            <h1 className="font-semibold text-foreground">CodeLearn</h1>
+            <h1 className="font-semibold text-foreground">CodeMentor</h1>
             <p className="text-xs text-muted-foreground">Interactive Programming Tutor</p>
           </div>
         </div>
