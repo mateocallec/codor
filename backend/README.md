@@ -2,6 +2,8 @@
 
 For users, notes & exercise storage
 
+**API DOMAIN:** https://gdg-api.callec.net
+
 ## API Endpoints
 
 `POST /v1/exercises/new` -> content: string
