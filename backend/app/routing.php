@@ -1,14 +1,34 @@
 <?php
-// routing.php
+/**
+ * @file routing.php
+ * @brief Handles API routing and dispatching requests to the appropriate controllers.
+ */
 
 header('Content-Type: application/json');
 
+/** 
+ * @brief Gets the HTTP request method (GET, POST, DELETE, etc.)
+ */
 $method = $_SERVER['REQUEST_METHOD'];
+
+/** 
+ * @brief Parses the request URI and normalizes the path.
+ */
 $path = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
 $path = rtrim($path, '/');
 $path = $path === '' ? '/' : $path;
 
-// Helper pour inclure et appeler un controller
+/**
+ * @brief Helper function to include a controller file and call a function within it.
+ * 
+ * @param string $file The controller file path
+ * @param string $function The function name to call
+ * @param array $params Optional array of parameters to pass to the function
+ * 
+ * @return void
+ * 
+ * If the controller or function does not exist, returns HTTP 500 with a JSON error.
+ */
 function callController($file, $function, $params = []) {
     if (!file_exists($file)) {
         http_response_code(500);
@@ -24,10 +44,18 @@ function callController($file, $function, $params = []) {
     call_user_func_array($function, $params);
 }
 
-// Détecte les routes dynamiques et remplace par des placeholders
+/**
+ * @brief Creates a unique route key based on HTTP method and path
+ */
 $routeKey = "$method $path";
 
-// Routes dynamiques
+/** 
+ * @brief Detects dynamic routes and replaces path segments with placeholders.
+ * 
+ * Examples:
+ * - /v1/exercise/123/info → /v1/exercise/{exercise_sub}/info
+ * - /v1/user/456/push → /v1/user/{user_sub}/push
+ */
 if (preg_match('#^/v1/exercise/([^/]+)/info$#', $path, $matches)) {
     $routeKey = "$method /v1/exercise/{exercise_sub}/info";
     $params = [$matches[1]];
@@ -77,7 +105,9 @@ if (preg_match('#^/v1/user/([^/]+)/note$#', $path, $matches)) {
     $params = [$matches[1], $noteParams];
 }
 
-// Switch pour toutes les routes
+/**
+ * @brief Main routing switch. Matches routeKey and calls the corresponding controller function.
+ */
 switch ($routeKey) {
     case 'POST /v1/exercises/new':
         callController('controllers/ExercisesController.php', 'createExercise', [$_POST['content'] ?? null]);

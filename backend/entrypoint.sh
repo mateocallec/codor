@@ -3,7 +3,7 @@ set -e
 
 echo "Initializing container..."
 
-chmod 777 /storage
+chmod 777 -R /storage
 
 # Enable default Apache site
 a2ensite 000-default.conf > /dev/null
