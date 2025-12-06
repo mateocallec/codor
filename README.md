@@ -8,6 +8,8 @@
 
 Created by the **Hagenberger Fünfeck** group for the **Google Developer Group DevFest Linz 2025**.
 
+<img src="./docs/dashboard.png?raw=true" alt="logo" height="512" />
+
 ## Overview
 
 This software is designed for teachers to upload exercises and for students to complete them directly within the platform. It features:
