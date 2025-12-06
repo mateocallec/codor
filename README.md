@@ -3,7 +3,7 @@
 **Goal:** Win money!
 
 
-FLow:
+Flow:
 
 1. Prof lädt fertiges Code-Beispiel hoch (python file)
 2. KI analysiert Code, zerlegt das in einzelne Aufgabenstellungen, um daraus eine Übung für SchülerInnen zu generieren
