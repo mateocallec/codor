@@ -3,10 +3,12 @@ import CodeEditor from "@/components/CodeEditor";
 import ChatWindow from "@/components/ChatWindow";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { Code, GraduationCap } from "lucide-react";
+import { AppProvider } from "@/contexts/AppContext";
 
 const Index = () => {
   return (
-    <div className="flex h-screen flex-col bg-background">
+    <AppProvider>
+      <div className="flex h-screen flex-col bg-background">
       {/* Header */}
       <header className="flex items-center justify-between border-b border-border px-6 py-3 bg-secondary">
         <div className="flex items-center gap-3">
@@ -40,6 +42,7 @@ const Index = () => {
         </ResizablePanelGroup>
       </main>
     </div>
+    </AppProvider>
   );
 };
 

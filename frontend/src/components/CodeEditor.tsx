@@ -3,24 +3,8 @@ import { Play, Copy, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Editor from "@monaco-editor/react";
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable";
-
-const sampleCode = `function greet(name) {
-  // This function greets the user
-  const message = "Hello, " + name + "!";
-  console.log(message);
-  return message;
-}
-
-// Call the function
-const result = greet("Learner");
-console.log(result + " +1");`;
-
-// Example of AI function call (mock)
-// ai.call("explain", "What does this code do?");
-
-// Example of error highlighting
-// editor.highlightError(1, "Something is wrong here");
-
+import { useAppContext } from "@/contexts/AppContext";
+import type { editor as MonacoEditor } from "monaco-editor";
 
 type LogEntry = {
   type: 'log' | 'error' | 'warn' | 'info' | 'system';
@@ -28,10 +12,12 @@ type LogEntry = {
 };
 
 const CodeEditor = () => {
-  const [code, setCode] = useState(sampleCode);
+  const { code, setCode, codeHighlight } = useAppContext();
   const [copied, setCopied] = useState(false);
   const [logs, setLogs] = useState<LogEntry[]>([]);
   const workerRef = useRef<Worker | null>(null);
+  const editorRef = useRef<MonacoEditor.IStandaloneCodeEditor | null>(null);
+  const decorationsRef = useRef<string[]>([]);
 
   const handleCopy = () => {
     navigator.clipboard.writeText(code);
@@ -76,6 +62,34 @@ const CodeEditor = () => {
     worker.postMessage(code);
   };
 
+  // Handle code highlighting from AI
+  useEffect(() => {
+    if (!editorRef.current || !codeHighlight) return;
+
+    const editor = editorRef.current;
+    const { startLine, startColumn, endLine, endColumn } = codeHighlight;
+
+    // Clear previous decorations
+    decorationsRef.current = editor.deltaDecorations(decorationsRef.current, [
+      {
+        range: {
+          startLineNumber: startLine,
+          startColumn: startColumn || 1,
+          endLineNumber: endLine,
+          endColumn: endColumn || 1000,
+        },
+        options: {
+          isWholeLine: !startColumn && !endColumn,
+          className: "highlighted-code-line",
+          inlineClassName: "highlighted-code-inline",
+        },
+      },
+    ]);
+
+    // Scroll to the highlighted line
+    editor.revealLineInCenter(startLine);
+  }, [codeHighlight]);
+
   // Cleanup worker on unmount
   useEffect(() => {
     return () => {
@@ -84,6 +98,10 @@ const CodeEditor = () => {
       }
     };
   }, []);
+
+  const handleEditorDidMount = (editor: MonacoEditor.IStandaloneCodeEditor) => {
+    editorRef.current = editor;
+  };
 
   return (
     <div className="flex h-full flex-col bg-code-bg">
@@ -134,6 +152,7 @@ const CodeEditor = () => {
               theme="vs-dark"
               value={code}
               onChange={(value) => setCode(value || "")}
+              onMount={handleEditorDidMount}
               options={{
                 minimap: { enabled: false },
                 fontSize: 14,

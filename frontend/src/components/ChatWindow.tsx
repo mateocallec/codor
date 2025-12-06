@@ -3,39 +3,11 @@ import { Send, Bot, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
-
-interface Message {
-  id: number;
-  role: "user" | "tutor";
-  content: string;
-  timestamp: Date;
-}
-
-const initialMessages: Message[] = [
-  {
-    id: 1,
-    role: "tutor",
-    content:
-      "Welcome! 👋 I'm your coding tutor. I see you're working on a greeting function. Would you like me to explain how it works?",
-    timestamp: new Date(),
-  },
-  {
-    id: 2,
-    role: "user",
-    content: "Yes please! Can you explain what the function keyword does?",
-    timestamp: new Date(),
-  },
-  {
-    id: 3,
-    role: "tutor",
-    content:
-      "Great question! The `function` keyword in JavaScript is used to define a reusable block of code. When you write `function greet(name)`, you're creating a function called 'greet' that takes one parameter called 'name'. You can then call this function multiple times with different values!",
-    timestamp: new Date(),
-  },
-];
+import { useAppContext } from "@/contexts/AppContext";
+import { streamChat, handleHighlightCode } from "@/lib/ai";
 
 const ChatWindow = () => {
-  const [messages, setMessages] = useState<Message[]>(initialMessages);
+  const { messages, setMessages, code, setCodeHighlight, isStreaming, setIsStreaming } = useAppContext();
   const [input, setInput] = useState("");
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -45,30 +17,78 @@ const ChatWindow = () => {
     }
   }, [messages]);
 
-  const handleSend = () => {
-    if (!input.trim()) return;
+  const handleSend = async () => {
+    if (!input.trim() || isStreaming) return;
 
-    const newMessage: Message = {
-      id: messages.length + 1,
-      role: "user",
-      content: input,
+    const userMessage = {
+      id: Date.now(),
+      role: "user" as const,
+      content: input.trim(),
       timestamp: new Date(),
     };
 
-    setMessages([...messages, newMessage]);
+    setMessages((prev) => [...prev, userMessage]);
     setInput("");
+    setIsStreaming(true);
 
-    // Simulate tutor response
-    setTimeout(() => {
-      const tutorResponse: Message = {
-        id: messages.length + 2,
-        role: "tutor",
-        content:
-          "That's a great follow-up question! Let me think about that... In programming, understanding the fundamentals like functions is key to becoming proficient. Keep exploring and asking questions!",
-        timestamp: new Date(),
-      };
-      setMessages((prev) => [...prev, tutorResponse]);
-    }, 1000);
+    // Create a placeholder message for the assistant's response
+    const assistantMessageId = Date.now() + 1;
+    const assistantMessage = {
+      id: assistantMessageId,
+      role: "assistant" as const,
+      content: "",
+      timestamp: new Date(),
+    };
+    setMessages((prev) => [...prev, assistantMessage]);
+
+    let accumulatedContent = "";
+
+    try {
+      await streamChat(
+        [...messages, userMessage],
+        code,
+        {
+          onTextChunk: (chunk) => {
+            accumulatedContent += chunk;
+            setMessages((prev) =>
+              prev.map((msg) =>
+                msg.id === assistantMessageId
+                  ? { ...msg, content: accumulatedContent }
+                  : msg
+              )
+            );
+          },
+          onFunctionCall: (functionCall) => {
+            if (functionCall.name === "highlight_code") {
+              const highlight = handleHighlightCode(functionCall.args);
+              setCodeHighlight(highlight);
+              
+              // Clear highlight after 5 seconds
+              setTimeout(() => {
+                setCodeHighlight(null);
+              }, 5000);
+            }
+          },
+          onComplete: () => {
+            setIsStreaming(false);
+          },
+          onError: (error) => {
+            console.error("Chat error:", error);
+            setMessages((prev) =>
+              prev.map((msg) =>
+                msg.id === assistantMessageId
+                  ? { ...msg, content: "Sorry, I encountered an error. Please try again." }
+                  : msg
+              )
+            );
+            setIsStreaming(false);
+          },
+        }
+      );
+    } catch (error) {
+      console.error("Error sending message:", error);
+      setIsStreaming(false);
+    }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -125,7 +145,9 @@ const ChatWindow = () => {
                     : "bg-chat-tutor text-foreground"
                 }`}
               >
-                <p className="text-sm leading-relaxed">{message.content}</p>
+                <p className="text-sm leading-relaxed whitespace-pre-wrap">
+                  {message.content || (message.role === "assistant" && isStreaming ? "..." : "")}
+                </p>
               </div>
             </div>
           ))}

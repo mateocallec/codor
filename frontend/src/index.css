@@ -150,4 +150,23 @@
   .scrollbar-thin::-webkit-scrollbar-thumb:hover {
     background: hsl(var(--muted-foreground));
   }
+
+  /* Monaco Editor code highlighting from AI */
+  .highlighted-code-line {
+    background-color: rgba(130, 80, 223, 0.2) !important;
+    animation: highlight-pulse 2s ease-in-out;
+  }
+
+  .highlighted-code-inline {
+    background-color: rgba(130, 80, 223, 0.3) !important;
+  }
+
+  @keyframes highlight-pulse {
+    0%, 100% {
+      background-color: rgba(130, 80, 223, 0.2);
+    }
+    50% {
+      background-color: rgba(130, 80, 223, 0.4);
+    }
+  }
 }
