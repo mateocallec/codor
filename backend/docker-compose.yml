@@ -9,7 +9,7 @@ services:
       - "8080:80"
     environment:
       - DB_NAME=${DB_NAME}
-      - MYSQL_HOST=gdg_linz_backend_db
+      - DB_HOST=gdg_linz_backend_db
       - DB_USER=${DB_USER}
       - DB_PASSWORD=${DB_PASSWORD}
     volumes:

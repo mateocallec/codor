@@ -2,6 +2,7 @@
 // controllers/ExercisesController.php
 
 require_once __DIR__ . '/../utils/db.php';
+require_once __DIR__ . '/../utils/functions.php';
 
 function createExercise($content) {
     global $db;
@@ -12,7 +13,7 @@ function createExercise($content) {
         return;
     }
 
-    $sub = bin2hex(random_bytes(8)); // identifiant unique pour l'exercise
+    $sub = str_random(16); // identifiant unique pour l'exercise
     $creation_time = time();
 
     $stmt = $db->prepare("INSERT INTO exercises (sub, creation_time) VALUES (:sub, :creation_time)");
@@ -30,7 +31,7 @@ function createExercise($content) {
 
 function getExerciseInfo($exercise_sub) {
     global $db;
-
+    
     $stmt = $db->prepare("SELECT * FROM exercises WHERE sub = :sub");
     $stmt->execute([':sub' => $exercise_sub]);
     $exercise = $stmt->fetch();

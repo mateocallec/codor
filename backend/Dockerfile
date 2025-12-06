@@ -4,6 +4,9 @@ FROM php:8.2-apache
 # Enable Apache rewrite module
 RUN a2enmod rewrite
 
+RUN apt-get update && apt-get install -y libonig-dev libzip-dev unzip \
+    && docker-php-ext-install pdo pdo_mysql
+
 # Copy application source code to Apache document root
 #COPY app/ /var/www/html/
 
