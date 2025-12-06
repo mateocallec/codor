@@ -11,7 +11,7 @@ const TeacherDashboard = () => {
   return (
     <div className="flex h-screen flex-col relative overflow-hidden">
       {/* Header */}
-      <header className="border-b border-border bg-secondary px-6 py-4">
+      <header className="border-b border-border px-6 py-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-purple-600 to-blue-500">

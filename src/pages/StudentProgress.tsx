@@ -13,6 +13,10 @@ interface StudentSubmission {
   timeSpent: string;
   aiInteractions: number;
   commonIssues: string[];
+  deductions?: Array<{
+    reason: string;
+    points: number;
+  }>;
 }
 
 interface Exercise {
@@ -37,6 +41,10 @@ const mockExercises: Exercise[] = [
           "Initially forgot to return the greeting",
           "Had trouble with string concatenation syntax",
           "Needed help understanding function parameters"
+        ],
+        deductions: [
+          { reason: "Missing semicolon in line 3", points: 3 },
+          { reason: "Inefficient string concatenation method", points: 2 }
         ]
       },
       {
@@ -50,6 +58,11 @@ const mockExercises: Exercise[] = [
           "Struggled with console.log placement",
           "Asked about the difference between return and console.log",
           "Needed clarification on variable scope"
+        ],
+        deductions: [
+          { reason: "Incorrect variable naming convention", points: 4 },
+          { reason: "Missing error handling", points: 5 },
+          { reason: "Code not properly indented", points: 3 }
         ]
       },
       {
@@ -80,6 +93,10 @@ const mockExercises: Exercise[] = [
         commonIssues: [
           "Needed help with array methods",
           "Confused about map vs forEach"
+        ],
+        deductions: [
+          { reason: "Incorrect use of filter method", points: 5 },
+          { reason: "Mutation of original array", points: 3 }
         ]
       },
       {
@@ -300,6 +317,48 @@ const StudentProgress = () => {
                         </li>
                       ))}
                     </ul>
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* Score Deductions */}
+              {selectedStudentData.deductions && selectedStudentData.deductions.length > 0 && (
+                <Card className="backdrop-blur-md bg-white/40 dark:bg-slate-900/40">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Award className="h-5 w-5 text-red-500" />
+                      Score Deductions
+                    </CardTitle>
+                    <CardDescription>
+                      Reasons why points were deducted from the final score
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-3">
+                      {selectedStudentData.deductions.map((deduction, index) => (
+                        <div 
+                          key={index} 
+                          className="flex items-center justify-between p-3 rounded-lg bg-red-500/10 border border-red-500/20 backdrop-blur-sm"
+                        >
+                          <div className="flex items-center gap-3">
+                            <div className="flex h-6 w-6 items-center justify-center rounded-full bg-red-500/20 text-xs font-semibold text-red-600 dark:text-red-400 flex-shrink-0">
+                              {index + 1}
+                            </div>
+                            <span className="text-sm text-foreground">{deduction.reason}</span>
+                          </div>
+                          <div className="flex items-center gap-1 text-red-600 dark:text-red-400 font-semibold text-sm">
+                            <span>-{deduction.points}</span>
+                            <span className="text-xs">pts</span>
+                          </div>
+                        </div>
+                      ))}
+                      <div className="flex items-center justify-between p-3 rounded-lg bg-muted/50 backdrop-blur-sm border border-border mt-4">
+                        <span className="text-sm font-semibold text-foreground">Total Points Lost</span>
+                        <span className="text-lg font-bold text-red-600 dark:text-red-400">
+                          -{selectedStudentData.deductions.reduce((sum, d) => sum + d.points, 0)} pts
+                        </span>
+                      </div>
+                    </div>
                   </CardContent>
                 </Card>
               )}

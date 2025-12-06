@@ -1,5 +1,5 @@
 import { useState, useRef } from "react";
-import { Play, Copy, Check } from "lucide-react";
+import { Play, Copy, Check, Bug } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const sampleCode = `function greet(name) {
@@ -50,10 +50,10 @@ const CodeEditor = () => {
             variant="ghost"
             size="sm"
             onClick={handleCopy}
-            className="h-8 gap-1.5 text-muted-foreground hover:text-foreground"
+            className="h-8 gap-1.5 text-muted-foreground hover:text-white hover:bg-gradient-to-br hover:from-purple-600 hover:to-blue-500 transition-all"
           >
             {copied ? (
-              <Check className="h-4 w-4 text-primary" />
+              <Check className="h-4 w-4" />
             ) : (
               <Copy className="h-4 w-4" />
             )}
@@ -61,7 +61,14 @@ const CodeEditor = () => {
           </Button>
           <Button
             size="sm"
-            className="h-8 gap-1.5 bg-gradient-to-r from-purple-600 to-blue-500 text-white hover:from-purple-700 hover:to-blue-600 border-0"
+            className="h-8 gap-1.5 bg-gradient-to-br from-purple-600 to-blue-500 text-white hover:from-purple-700 hover:to-blue-600 border-0"
+          >
+            <Bug className="h-4 w-4" />
+            <span className="text-xs">Debug</span>
+          </Button>
+          <Button
+            size="sm"
+            className="h-8 gap-1.5 bg-gradient-to-br from-purple-600 to-blue-500 text-white hover:from-purple-700 hover:to-blue-600 border-0"
           >
             <Play className="h-4 w-4" />
             <span className="text-xs">Run</span>

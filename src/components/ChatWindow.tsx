@@ -145,7 +145,7 @@ const ChatWindow = () => {
           <Button
             onClick={handleSend}
             size="icon"
-            className="h-10 w-10 bg-primary text-primary-foreground hover:bg-primary/90"
+            className="h-10 w-10 bg-gradient-to-br from-purple-600 to-blue-500 text-white hover:from-purple-700 hover:to-blue-600 border-0"
             disabled={!input.trim()}
           >
             <Send className="h-4 w-4" />
