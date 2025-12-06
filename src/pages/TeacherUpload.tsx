@@ -26,7 +26,7 @@ const TeacherUpload = () => {
 
 const result = greet("Student");
 console.log(result);`);
-  const [description, setDescription] = useState("Create a function that takes a person's name as input and returns a personalized greeting message. The function should also log the greeting to the console.");
+  const [description, setDescription] = useState("In this exercise, you'll learn how to create a JavaScript function that takes a parameter and returns a personalized greeting. This is a fundamental skill in programming that teaches you about functions, parameters, string manipulation, and return values. You'll also practice logging output to the console for debugging purposes.");
   const [steps, setSteps] = useState<Step[]>([
     { 
       id: 1, 
@@ -71,16 +71,31 @@ console.log(result);`);
       lineEnd: 8 
     }
   ]);
-  const [selectedStep, setSelectedStep] = useState<number | null>(1);
+  const [selectedStep, setSelectedStep] = useState<number | null>(null);
+  const [hoveredStep, setHoveredStep] = useState<number | null>(null);
+  const [editingStep, setEditingStep] = useState<number | null>(null);
 
   const addStep = () => {
     const newStep: Step = {
-      id: steps.length + 1,
+      id: Math.max(...steps.map(s => s.id), 0) + 1,
       description: "",
       lineStart: 1,
       lineEnd: 1,
     };
     setSteps([...steps, newStep]);
+  };
+
+  const getStepColor = (stepId: number) => {
+    const colors = [
+      { bg: 'bg-purple-500/10', border: 'border-purple-500', text: 'text-purple-500', line: 'bg-purple-500' },
+      { bg: 'bg-blue-500/10', border: 'border-blue-500', text: 'text-blue-500', line: 'bg-blue-500' },
+      { bg: 'bg-cyan-500/10', border: 'border-cyan-500', text: 'text-cyan-500', line: 'bg-cyan-500' },
+      { bg: 'bg-green-500/10', border: 'border-green-500', text: 'text-green-500', line: 'bg-green-500' },
+      { bg: 'bg-yellow-500/10', border: 'border-yellow-500', text: 'text-yellow-500', line: 'bg-yellow-500' },
+      { bg: 'bg-orange-500/10', border: 'border-orange-500', text: 'text-orange-500', line: 'bg-orange-500' },
+      { bg: 'bg-red-500/10', border: 'border-red-500', text: 'text-red-500', line: 'bg-red-500' },
+    ];
+    return colors[(stepId - 1) % colors.length];
   };
 
   const removeStep = (id: number) => {
@@ -164,17 +179,20 @@ console.log(result);`);
 
             <div className="flex flex-1 overflow-auto scrollbar-thin">
               {/* Line Numbers */}
-              <div className="flex flex-col bg-code-bg py-4 pl-4 pr-2 text-right font-mono text-sm text-code-lineNumber select-none">
+              <div className="flex flex-col bg-code-bg py-4 pl-4 pr-2 text-right font-mono text-sm text-code-lineNumber select-none relative">
                 {codeLines.map((_, i) => {
                   const lineNum = i + 1;
-                  const isHighlighted = selectedStep !== null && 
-                    steps.find(s => s.id === selectedStep)?.lineStart! <= lineNum &&
-                    steps.find(s => s.id === selectedStep)?.lineEnd! >= lineNum;
+                  const activeStep = hoveredStep || selectedStep;
+                  const isHighlighted = activeStep !== null && 
+                    steps.find(s => s.id === activeStep)?.lineStart! <= lineNum &&
+                    steps.find(s => s.id === activeStep)?.lineEnd! >= lineNum;
+                  const stepForLine = steps.find(s => s.lineStart <= lineNum && s.lineEnd >= lineNum);
+                  const color = stepForLine ? getStepColor(stepForLine.id) : null;
                   
                   return (
                     <div 
                       key={i} 
-                      className={`h-6 flex items-center justify-end ${isHighlighted ? 'text-primary font-semibold' : ''}`}
+                      className={`h-6 flex items-center justify-end ${isHighlighted && color ? color.text + ' font-semibold' : ''}`}
                     >
                       {lineNum}
                     </div>
@@ -184,15 +202,21 @@ console.log(result);`);
 
               {/* Code Content */}
               <div className="flex-1 py-4 pr-4 relative">
-                {selectedStep !== null && (
-                  <div 
-                    className="absolute left-0 right-0 bg-primary/10 pointer-events-none transition-all duration-200"
-                    style={{ 
-                      top: `${((steps.find(s => s.id === selectedStep)?.lineStart || 1) - 1) * 24 + 16}px`,
-                      height: `${((steps.find(s => s.id === selectedStep)?.lineEnd || 1) - (steps.find(s => s.id === selectedStep)?.lineStart || 1) + 1) * 24}px`
-                    }}
-                  />
-                )}
+                {(hoveredStep !== null || selectedStep !== null) && (() => {
+                  const activeStep = hoveredStep || selectedStep;
+                  const step = steps.find(s => s.id === activeStep);
+                  const color = step ? getStepColor(step.id) : null;
+                  
+                  return step && color ? (
+                    <div 
+                      className={`absolute left-0 right-0 ${color.bg} pointer-events-none transition-all duration-200 border-l-4 ${color.border}`}
+                      style={{ 
+                        top: `${((step.lineStart || 1) - 1) * 24 + 16}px`,
+                        height: `${((step.lineEnd || 1) - (step.lineStart || 1) + 1) * 24}px`
+                      }}
+                    />
+                  ) : null;
+                })()}
                 <pre className="relative h-full w-full font-mono text-sm leading-6 text-foreground outline-none m-0">
                   <code contentEditable
                     suppressContentEditableWarning
@@ -216,15 +240,15 @@ console.log(result);`);
                 Task Description
               </CardTitle>
               <CardDescription>
-                Describe what students need to accomplish
+                AI-generated task overview (editable)
               </CardDescription>
             </CardHeader>
             <CardContent>
               <Textarea
-                placeholder="Write a clear description of the task..."
+                placeholder="The AI will generate a description based on your code..."
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                rows={4}
+                rows={6}
                 required
               />
             </CardContent>
@@ -237,108 +261,168 @@ console.log(result);`);
                 <div>
                   <CardTitle className="flex items-center gap-2">
                     <CheckCircle2 className="h-5 w-5 text-primary" />
-                    Task Steps
+                    Learning Steps
                   </CardTitle>
                   <CardDescription>
-                    Link steps to specific lines of code
+                    AI-generated steps linked to code lines
                   </CardDescription>
                 </div>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              {steps.map((step, index) => {
+                const color = getStepColor(step.id);
+                return (
+                  <div key={step.id}>
+                    <div
+                      className={`rounded-lg border-2 p-4 transition-all cursor-pointer ${
+                        selectedStep === step.id
+                          ? `${color.border} ${color.bg}`
+                          : hoveredStep === step.id
+                          ? `${color.border} ${color.bg}`
+                          : "border-border hover:border-muted-foreground/50"
+                      }`}
+                      onClick={() => {
+                        setSelectedStep(step.id === selectedStep ? null : step.id);
+                        setEditingStep(null);
+                      }}
+                      onMouseEnter={() => setHoveredStep(step.id)}
+                      onMouseLeave={() => setHoveredStep(null)}
+                    >
+                      <div className="mb-3 flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <div className={`h-6 w-6 rounded-full ${color.line} flex items-center justify-center`}>
+                            <span className="text-xs font-bold text-white">{index + 1}</span>
+                          </div>
+                          <span className="text-xs text-muted-foreground">
+                            Lines {step.lineStart}-{step.lineEnd}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            className="h-6 w-6"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setEditingStep(editingStep === step.id ? null : step.id);
+                            }}
+                          >
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                            </svg>
+                          </Button>
+                          {steps.length > 1 && (
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon"
+                              className="h-6 w-6 text-destructive hover:text-destructive"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                removeStep(step.id);
+                              }}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="space-y-3">
+                        <div>
+                          {editingStep === step.id ? (
+                            <Textarea
+                              placeholder="Describe this step..."
+                              value={step.description}
+                              onChange={(e) =>
+                                updateStep(step.id, "description", e.target.value)
+                              }
+                              onClick={(e) => e.stopPropagation()}
+                              rows={2}
+                              className="text-sm"
+                              autoFocus
+                            />
+                          ) : (
+                            <p className="text-sm text-foreground leading-relaxed">
+                              {step.description || "Click edit to add a description..."}
+                            </p>
+                          )}
+                        </div>
+
+                        {editingStep === step.id && (
+                          <div className="flex gap-3">
+                            <div className="flex-1">
+                              <Label className="text-xs">Start Line</Label>
+                              <Input
+                                type="number"
+                                min="1"
+                                value={step.lineStart}
+                                onChange={(e) =>
+                                  updateStep(
+                                    step.id,
+                                    "lineStart",
+                                    parseInt(e.target.value) || 1
+                                  )
+                                }
+                                onClick={(e) => e.stopPropagation()}
+                                className="mt-1 h-8 text-xs"
+                              />
+                            </div>
+                            <div className="flex-1">
+                              <Label className="text-xs">End Line</Label>
+                              <Input
+                                type="number"
+                                min="1"
+                                value={step.lineEnd}
+                                onChange={(e) =>
+                                  updateStep(
+                                    step.id,
+                                    "lineEnd",
+                                    parseInt(e.target.value) || 1
+                                  )
+                                }
+                                onClick={(e) => e.stopPropagation()}
+                                className="mt-1 h-8 text-xs"
+                              />
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                    
+                    {/* Add Step Button Between Steps */}
+                    {index < steps.length - 1 && (
+                      <div className="flex justify-center py-1">
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={addStep}
+                          className="h-6 w-6 rounded-full p-0 hover:bg-primary/10"
+                        >
+                          <Plus className="h-4 w-4 text-primary" />
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+              
+              {/* Add Step Button at the End */}
+              <div className="flex justify-center pt-2">
                 <Button
                   type="button"
                   size="sm"
                   onClick={addStep}
-                  className="bg-gradient-to-r from-purple-600 to-blue-500 text-white hover:from-purple-700 hover:to-blue-600"
+                  variant="outline"
+                  className="w-full"
                 >
                   <Plus className="mr-1 h-4 w-4" />
-                  Add Step
+                  Add Manual Step
                 </Button>
               </div>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {steps.map((step, index) => (
-                <div
-                  key={step.id}
-                  className={`rounded-lg border p-4 transition-all cursor-pointer ${
-                    selectedStep === step.id
-                      ? "border-primary bg-primary/5"
-                      : "border-border hover:border-primary/50"
-                  }`}
-                  onClick={() => setSelectedStep(step.id)}
-                >
-                  <div className="mb-3 flex items-center justify-between">
-                    <span className="text-sm font-medium text-foreground">
-                      Step {index + 1}
-                    </span>
-                    {steps.length > 1 && (
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        className="h-6 w-6 text-destructive hover:text-destructive"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          removeStep(step.id);
-                        }}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    )}
-                  </div>
-
-                  <div className="space-y-3">
-                    <div>
-                      <Label className="text-xs">Step Description</Label>
-                      <Textarea
-                        placeholder="Describe this step..."
-                        value={step.description}
-                        onChange={(e) =>
-                          updateStep(step.id, "description", e.target.value)
-                        }
-                        onClick={(e) => e.stopPropagation()}
-                        rows={2}
-                        className="mt-1"
-                      />
-                    </div>
-
-                    <div className="flex gap-3">
-                      <div className="flex-1">
-                        <Label className="text-xs">Start Line</Label>
-                        <Input
-                          type="number"
-                          min="1"
-                          value={step.lineStart}
-                          onChange={(e) =>
-                            updateStep(
-                              step.id,
-                              "lineStart",
-                              parseInt(e.target.value) || 1
-                            )
-                          }
-                          onClick={(e) => e.stopPropagation()}
-                          className="mt-1"
-                        />
-                      </div>
-                      <div className="flex-1">
-                        <Label className="text-xs">End Line</Label>
-                        <Input
-                          type="number"
-                          min="1"
-                          value={step.lineEnd}
-                          onChange={(e) =>
-                            updateStep(
-                              step.id,
-                              "lineEnd",
-                              parseInt(e.target.value) || 1
-                            )
-                          }
-                          onClick={(e) => e.stopPropagation()}
-                          className="mt-1"
-                        />
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              ))}
             </CardContent>
           </Card>
         </div>
