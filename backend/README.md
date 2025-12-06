@@ -1,117 +1,322 @@
-# Backend logic
+# Backend API
 
-For users, notes & exercise storage
+Backend service responsible for **exercise management**, **user submissions**, and **grading**.
 
-**API DOMAIN:** https://gdg-api.callec.net
+---
 
-## API Endpoints
+## ⚠️ Important
 
-`POST /v1/exercises/new` -> content: string
+The directory below **must be writable** for the application to work correctly:
+
+```bash
+container-data/storage
+```
+
+Required permissions:
+
+```bash
+chmod -R 777 container-data/storage
+```
+
+---
+
+## 🌐 API Base URL
+
+```
+https://gdg-api.callec.net
+```
+
+All endpoints are prefixed with `/v1`.
+
+---
+
+## 📚 API Endpoints
+
+---
+
+### ➕ Create a new exercise
+
+**Endpoint**
+
+```
+POST /v1/exercises/new
+```
+
+**Parameters**
+
+| Name    | Type   | Required | Description      |
+| ------- | ------ | -------- | ---------------- |
+| content | string | No       | Exercise content |
+
+**Response**
 
 ```json
-{"sub": string, "creation_time": int}
+{
+  "sub": "string",
+  "creation_time": 1234567890
+}
 ```
 
-```
-curl -X POST -d "content=THIS_IS_MY_CONTENT" https://gdg-api.callec.net/v1/exercises/new
+**Test**
+
+```bash
+curl -X POST \
+  -d "content=THIS_IS_MY_CONTENT" \
+  https://gdg-api.callec.net/v1/exercises/new
 ```
 
 ---
 
-`GET /v1/exercise/{exercise_id}/info`
+### 📄 Get exercise information
+
+**Endpoint**
+
+```
+GET /v1/exercise/{exercise_id}/info
+```
+
+**Response**
 
 ```json
-{"sub": string, "creation_time": int, "content": string}
+{
+  "sub": "string",
+  "creation_time": 1234567890,
+  "content": "string"
+}
 ```
 
-```
-curl -X GET https://gdg-api.callec.net/v1/exercise/{exercise_id}/info
-```
+**Test**
 
----
-
-`POST /v1/exercise/{exercise_id}/update` -> content: string
-
-```
-curl -X POST -d "content=THIS_IS_MY_CONTENT" https://gdg-api.callec.net/v1/exercise/{exercise_id}/update
-```
-
----
-
-`DELETE /v1/exercise/{exercise_id}/delete`
-
-```
-curl -X DELETE https://gdg-api.callec.net/v1/exercise/{exercise_id}/delete
+```bash
+curl -X GET \
+  https://gdg-api.callec.net/v1/exercise/{exercise_id}/info
 ```
 
 ---
 
-`GET /v1/exercise/{exercise_id}/participants`
+### ✏️ Update an exercise
+
+**Endpoint**
+
+```
+POST /v1/exercise/{exercise_id}/update
+```
+
+**Parameters**
+
+| Name    | Type   | Required |
+| ------- | ------ | -------- |
+| content | string | Yes      |
+
+**Test**
+
+```bash
+curl -X POST \
+  -d "content=UPDATED_CONTENT" \
+  https://gdg-api.callec.net/v1/exercise/{exercise_id}/update
+```
+
+---
+
+### 🗑️ Delete an exercise
+
+**Endpoint**
+
+```
+DELETE /v1/exercise/{exercise_id}/delete
+```
+
+**Test**
+
+```bash
+curl -X DELETE \
+  https://gdg-api.callec.net/v1/exercise/{exercise_id}/delete
+```
+
+---
+
+### 👥 List exercise participants
+
+**Endpoint**
+
+```
+GET /v1/exercise/{exercise_id}/participants
+```
+
+**Response**
 
 ```json
-["sub1", "sub2", ...]
+["user_sub_1", "user_sub_2"]
 ```
 
-```
-curl -X GET https://gdg-api.callec.net/v1/exercise/{exercise_id}/participants
+**Test**
+
+```bash
+curl -X GET \
+  https://gdg-api.callec.net/v1/exercise/{exercise_id}/participants
 ```
 
 ---
 
-`GET /v1/exercise/{exercise_id}/participant/{user_id}`
+### 👤 Get participant details
+
+**Endpoint**
+
+```
+GET /v1/exercise/{exercise_id}/participant/{user_id}
+```
+
+**Response**
 
 ```json
-{"sub": string, "academic_id": int,"content": ?string}
+{
+  "sub": "string",
+  "academic_id": 123456,
+  "content": "string | null"
+}
 ```
 
-```
-curl -X GET https://gdg-api.callec.net/v1/exercise/{exercise_id}/participant/{user_id}
+**Test**
+
+```bash
+curl -X GET \
+  https://gdg-api.callec.net/v1/exercise/{exercise_id}/participant/{user_id}
 ```
 
 ---
 
-`POST /v1/users/new` -> exercise_id: string, academic_id: int
+### ➕ Create a new user
+
+**Endpoint**
+
+```
+POST /v1/users/new
+```
+
+**Parameters**
+
+| Name        | Type   | Required |
+| ----------- | ------ | -------- |
+| exercise_id | string | Yes      |
+| academic_id | int    | Yes      |
+
+**Response**
 
 ```json
-{"sub": string, "exercise_sub": string, "academic_id": string, "creation_time": int}
+{
+  "sub": "string",
+  "exercise_sub": "string",
+  "academic_id": 123456,
+  "creation_time": 1234567890
+}
 ```
 
-```
-curl -X POST -d "exercise_id=&academic_id=" https://gdg-api.callec.net/v1/users/new
+**Test**
+
+```bash
+curl -X POST \
+  -d "exercise_id=EXERCISE_SUB&academic_id=123456" \
+  https://gdg-api.callec.net/v1/users/new
 ```
 
 ---
 
-`GET /v1/user/{user_id}/info`
+### ℹ️ Get user information
+
+**Endpoint**
+
+```
+GET /v1/user/{user_id}/info
+```
+
+**Response**
 
 ```json
-{"sub": string, "exercise_id": string, "creation_time": int, "academic_id": int, "note": ?int}
+{
+  "sub": "string",
+  "exercise_id": "string",
+  "creation_time": 1234567890,
+  "academic_id": 123456,
+  "note": 85
+}
 ```
 
-```
-curl -X GET https://gdg-api.callec.net/v1/user/{user_id}/info
-```
+**Test**
 
----
-
-`POST /v1/user/{user_id}/push` -> content: string
-
-```
-curl -X POST -d "content=THIS_IS_MY_WORK" https://gdg-api.callec.net/v1/user/{user_id}/push
-```
-
----
-
-`DELETE /v1/user/{user_id}/delete`
-
-```
-curl -X DELETE https://gdg-api.callec.net/v1/user/{user_id}/delete
+```bash
+curl -X GET \
+  https://gdg-api.callec.net/v1/user/{user_id}/info
 ```
 
 ---
 
-`POST /v1/user/{user_id}/note` -> note: int (>= 0 && <= 100)
+### 📤 Submit user content
+
+**Endpoint**
 
 ```
-curl -X POST -d "note=12" https://gdg-api.callec.net/v1/user/{user_id}/note
+POST /v1/user/{user_id}/push
 ```
+
+**Parameters**
+
+| Name    | Type   | Required |
+| ------- | ------ | -------- |
+| content | string | Yes      |
+
+**Test**
+
+```bash
+curl -X POST \
+  -d "content=THIS_IS_MY_WORK" \
+  https://gdg-api.callec.net/v1/user/{user_id}/push
+```
+
+---
+
+### 🗑️ Delete a user
+
+**Endpoint**
+
+```
+DELETE /v1/user/{user_id}/delete
+```
+
+**Test**
+
+```bash
+curl -X DELETE \
+  https://gdg-api.callec.net/v1/user/{user_id}/delete
+```
+
+---
+
+### ✅ Grade a user
+
+**Endpoint**
+
+```
+POST /v1/user/{user_id}/note
+```
+
+**Parameters**
+
+| Name | Type | Constraints    |
+| ---- | ---- | -------------- |
+| note | int  | 0 ≤ note ≤ 100 |
+
+**Test**
+
+```bash
+curl -X POST \
+  -d "note=12" \
+  https://gdg-api.callec.net/v1/user/{user_id}/note
+```
+
+---
+
+## 🧩 Notes
+
+- All responses are returned in **JSON**
+- Errors return an appropriate **HTTP status code**
+- Exercise and user contents are stored using file-based storage
