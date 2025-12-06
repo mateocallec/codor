@@ -1,6 +1,14 @@
+<div align="center">
+    <a href="https://github.com/mateocallec/gdg-linz"><img src="./docs/logo.svg?raw=true" alt="logo" height="217" /></a>
+</div>
+
+<hr />
+
 # Hagenberger Fünfeck - DevFest Linz 2025 Project
 
 Created by the **Hagenberger Fünfeck** group for the **Google Developer Group DevFest Linz 2025**.
+
+<img src="./docs/dashboard.png?raw=true" alt="logo" height="512" />
 
 ## Overview
 

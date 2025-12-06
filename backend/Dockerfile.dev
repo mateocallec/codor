@@ -7,9 +7,6 @@ RUN a2enmod rewrite
 RUN apt-get update && apt-get install -y libonig-dev libzip-dev unzip \
     && docker-php-ext-install pdo pdo_mysql
 
-# Copy application source code to Apache document root
-#COPY app/ /var/www/html/
-
 # Copy Apache virtual host configuration
 COPY apache.conf /etc/apache2/sites-available/000-default.conf
 
@@ -20,7 +17,6 @@ COPY entrypoint.sh /usr/local/bin/entrypoint.sh
 RUN mkdir -p /storage
 
 # Set permissions
-#RUN chown -R www-data:www-data /var/www/html
 RUN chmod -R 755 /var/www/html
 RUN chmod +x /usr/local/bin/entrypoint.sh
 
