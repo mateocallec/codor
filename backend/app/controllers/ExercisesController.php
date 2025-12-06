@@ -6,12 +6,6 @@ require_once __DIR__ . '/../utils/functions.php';
 
 function createExercise($content) {
     global $db;
-    
-    if (!$content) {
-        http_response_code(400);
-        echo json_encode(["error" => "Content is required"]);
-        return;
-    }
 
     do {
         $sub = str_random(16);
@@ -22,7 +16,7 @@ function createExercise($content) {
 
     $creation_time = time();
 
-    if (!add_storage_file('exercises', $sub, $content)) {
+    if (!add_storage_file('exercises', $sub, (isset($content)) ? $content : "")) {
         http_response_code(400);
         echo json_encode(["error" => "An error occured"]);
         return;
@@ -69,13 +63,13 @@ function getExerciseInfo($exercise_sub) {
 function updateExercise($exercise_sub, $data) {
     global $db;
 
-    if (!$data || !$data['content']) {
+    if (!$data) {
         http_response_code(400);
         echo json_encode(["error" => "Content is required"]);
         return;
     }
 
-    if (!add_storage_file('exercises', $exercise_sub, $data['content'])) {
+    if (!add_storage_file('exercises', $exercise_sub, isset($data['content']) ? $data['content'] : "")) {
         http_response_code(400);
         echo json_encode(["error" => "An error occured"]);
         return;

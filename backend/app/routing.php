@@ -54,6 +54,12 @@ if (preg_match('#^/v1/exercise/([^/]+)/participant/([^/]+)$#', $path, $matches))
     $params = [$matches[1], $matches[2]];
 }
 
+if (preg_match('#^/v1/user/([^/]+)/push$#', $path, $matches)) {
+    $routeKey = "$method /v1/user/{user_sub}/push";
+    parse_str(file_get_contents("php://input"), $pushParams);
+    $params = [$matches[1], $pushParams];
+}
+
 if (preg_match('#^/v1/user/([^/]+)/delete$#', $path, $matches)) {
     $routeKey = "$method /v1/user/{user_sub}/delete";
     parse_str(file_get_contents("php://input"), $deleteParams);
@@ -63,6 +69,12 @@ if (preg_match('#^/v1/user/([^/]+)/delete$#', $path, $matches)) {
 if (preg_match('#^/v1/user/([^/]+)/info$#', $path, $matches)) {
     $routeKey = "$method /v1/user/{user_sub}/info";
     $params = [$matches[1]];
+}
+
+if (preg_match('#^/v1/user/([^/]+)/note$#', $path, $matches)) {
+    $routeKey = "$method /v1/user/{user_sub}/note";
+    parse_str(file_get_contents("php://input"), $noteParams);
+    $params = [$matches[1], $noteParams];
 }
 
 // Switch pour toutes les routes
@@ -98,12 +110,20 @@ switch ($routeKey) {
         ]);
         break;
 
+    case 'POST /v1/user/{user_sub}/push':
+        callController('controllers/UsersController.php', 'pushContent', $params);
+        break;
+
     case 'DELETE /v1/user/{user_sub}/delete':
         callController('controllers/UsersController.php', 'deleteUser', $params);
         break;
 
     case 'GET /v1/user/{user_sub}/info':
         callController('controllers/UsersController.php', 'getUserInfo', $params);
+        break;
+
+    case 'POST /v1/user/{user_sub}/note':
+        callController('controllers/UsersController.php', 'noteUser', $params);
         break;
 
     default:

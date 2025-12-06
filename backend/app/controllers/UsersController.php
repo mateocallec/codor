@@ -61,6 +61,35 @@ function createUser($academic_id, $exercise_sub) {
 }
 
 /**
+ * Publie le contenu
+ * @param string $user_sub
+ */
+function pushContent($user_sub, $params = []) {
+    global $db;
+
+    if (!$params) {
+        http_response_code(400);
+        echo json_encode(["error" => "Content is required"]);
+        return;
+    }
+
+    // Vérifie que l'utilisateur existe
+    $stmt = $db->prepare("SELECT id FROM users WHERE sub = :sub");
+    $stmt->execute([':sub' => $user_sub]);
+    $user = $stmt->fetch();
+
+    if (!$user) {
+        http_response_code(404);
+        echo json_encode(["error" => "User not found"]);
+        return;
+    }
+
+    add_storage_file('returns', $user_sub, (isset($params['content'])) ? $params['content'] : "");
+
+    echo json_encode(["message" => "Content of user $user_sub updated"]);
+}
+
+/**
  * Supprime un utilisateur par sub
  * @param string $user_sub
  */
@@ -97,4 +126,28 @@ function getUserInfo($user_sub) {
     }
 
     echo json_encode($user);
+}
+
+/**
+ * Note un utilisateur
+ * @param string $user_sub
+ */
+function noteUser($user_sub, $params = []) {
+    global $db;
+
+    // Vérifie que l'utilisateur existe
+    $stmt = $db->prepare("SELECT id FROM users WHERE sub = :sub");
+    $stmt->execute([':sub' => $user_sub]);
+    $user = $stmt->fetch();
+
+    if ($stmt->rowCount() === 0) {
+        http_response_code(404);
+        echo json_encode(["error" => "User not found"]);
+        return;
+    }
+
+    $stmt = $db->prepare("UPDATE users SET note = :note WHERE sub = :sub");
+    $stmt->execute([':note' => (isset($params['note'])) ? $params['note'] : "", ':sub' => $user_sub]);
+
+    echo json_encode(["message" => "User $user_sub noted"]);
 }

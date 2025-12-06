@@ -60,6 +60,10 @@ For users, notes & exercise storage
 
 ---
 
+`POST /v1/user/{user_id}/push` -> content: string
+
+---
+
 `DELETE /v1/user/{user_id}/delete`
 
 ---
