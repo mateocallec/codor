@@ -6,7 +6,7 @@ services:
     depends_on:
       - gdg_linz_backend_db
     ports:
-      - "8080:80"
+      - "7100:80"
     environment:
       - DB_NAME=${DB_NAME}
       - DB_HOST=gdg_linz_backend_db
