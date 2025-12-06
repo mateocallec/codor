@@ -1,0 +1,8 @@
+{
+  "username": "mateocallec",
+  "name": "gdg-linz-backend:latest",
+  "registry-host": "registry-1.docker.io",
+  "registry-port": 5000,
+  "docker-compose": "docker-compose.yml",
+  "dockerfile": "Dockerfile"
+}
