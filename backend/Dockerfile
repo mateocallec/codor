@@ -5,7 +5,7 @@ FROM php:8.2-apache
 RUN a2enmod rewrite
 
 # Copy application source code to Apache document root
-COPY app/ /var/www/html/
+#COPY app/ /var/www/html/
 
 # Copy Apache virtual host configuration
 COPY apache.conf /etc/apache2/sites-available/000-default.conf
@@ -14,9 +14,13 @@ COPY apache.conf /etc/apache2/sites-available/000-default.conf
 COPY entrypoint.sh /usr/local/bin/entrypoint.sh
 
 # Set permissions
-RUN chown -R www-data:www-data /var/www/html \
-    && chmod -R 755 /var/www/html \
-    && chmod +x /usr/local/bin/entrypoint.sh
+#RUN chown -R www-data:www-data /var/www/html \
+#    && chmod -R 755 /var/www/html \
+#    && chmod +x /usr/local/bin/entrypoint.sh
+
+# Only for dev
+RUN chmod -R 755 /var/www/html
+RUN chmod +x /usr/local/bin/entrypoint.sh
 
 # Expose HTTP port
 EXPOSE 80

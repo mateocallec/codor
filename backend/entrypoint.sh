@@ -4,7 +4,7 @@ set -e
 echo "Initializing container..."
 
 # Ensure permissions (useful for mounted volumes)
-chown -R www-data:www-data /var/www/html
+#chown -R www-data:www-data /var/www/html
 
 # Enable default Apache site
 a2ensite 000-default.conf > /dev/null

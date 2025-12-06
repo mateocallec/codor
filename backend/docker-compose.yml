@@ -14,6 +14,7 @@ services:
       - DB_PASSWORD=${DB_PASSWORD}
     volumes:
       - ./app/:/var/www/html/
+      - ./container-data/storage:/storage
     networks:
       - gdg_linz_backend_net
 
@@ -29,7 +30,6 @@ services:
     volumes:
       - ./db/users.sql:/docker-entrypoint-initdb.d/users.sql
       - ./db/exercises.sql:/docker-entrypoint-initdb.d/exercises.sql
-      - ./db/notes.sql:/docker-entrypoint-initdb.d/notes.sql
       - ./container-data/mysql:/var/lib/mysql
     networks:
       - gdg_linz_backend_net
@@ -44,7 +44,9 @@ services:
       - "8081:80"
     environment:
       - PMA_HOST=gdg_linz_backend_db
-      - MYSQL_ROOT_PASSWORD=${DB_ROOT_PASSWORD}
+      - PMA_PORT=3306
+      - PMA_USER=root
+      - PMA_PASSWORD=${DB_ROOT_PASSWORD}
       - PMA_ARBITRARY=1
     networks:
       - gdg_linz_backend_net
