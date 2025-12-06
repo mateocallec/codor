@@ -114,11 +114,11 @@ const CodeEditor = () => {
       {/* Editor Header */}
       <div className="flex items-center justify-between border-b border-border px-4 py-2">
         <div className="flex items-center gap-2">
-          <div className="flex gap-1.5">
+          {/* <div className="flex gap-1.5">
             <div className="h-3 w-3 rounded-full bg-destructive/80" />
             <div className="h-3 w-3 rounded-full bg-yellow-500/80" />
             <div className="h-3 w-3 rounded-full bg-green-500/80" />
-          </div>
+          </div> */}
           <span className="ml-4 font-mono text-sm text-muted-foreground">
             lesson-01.js
           </span>
@@ -128,7 +128,7 @@ const CodeEditor = () => {
             variant="ghost"
             size="sm"
             onClick={handleCopy}
-            className="h-8 gap-1.5 text-muted-foreground hover:text-foreground"
+            className="h-8 gap-1.5 text-muted-foreground hover:bg-gradient-to-br from-purple-600 to-blue-500"
           >
             {copied ? (
               <Check className="h-4 w-4 text-primary" />
@@ -140,7 +140,7 @@ const CodeEditor = () => {
           <Button
             size="sm"
             onClick={handleRun}
-            className="h-8 gap-1.5 bg-primary text-primary-foreground hover:bg-primary/90"
+            className="h-8 gap-1.5 text-primary-foreground bg-gradient-to-br from-purple-600 to-blue-500"
           >
             <Play className="h-4 w-4" />
             <span className="text-xs">Run</span>

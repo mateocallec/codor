@@ -223,7 +223,7 @@ const ChatWindow = () => {
               size="sm" 
               onClick={handleCheckTask}
               disabled={isStreaming}
-              className="shrink-0"
+              className="shrink-0 bg-gradient-to-br from-purple-600 to-blue-500"
             >
               Check Solution
             </Button>
