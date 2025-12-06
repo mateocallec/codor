@@ -13,8 +13,20 @@ function createExercise($content) {
         return;
     }
 
-    $sub = str_random(16); // identifiant unique pour l'exercise
+    do {
+        $sub = str_random(16);
+
+        $stmt = $db->prepare("SELECT * FROM exercises WHERE sub = :sub");
+        $stmt->execute([':sub' => $sub]);
+    } while($stmt->fetch());
+
     $creation_time = time();
+
+    if (!add_storage_file('exercises', $sub, $content)) {
+        http_response_code(400);
+        echo json_encode(["error" => "An error occured"]);
+        return;
+    }
 
     $stmt = $db->prepare("INSERT INTO exercises (sub, creation_time) VALUES (:sub, :creation_time)");
     $stmt->execute([
@@ -44,7 +56,13 @@ function getExerciseInfo($exercise_sub) {
 
     unset($exercise->id);
 
-    $exercise->content = "test";
+    $exercise->content = read_storage_file('exercises', $exercise_sub);
+
+    if (!$exercise->content) {
+        http_response_code(400);
+        echo json_encode(["error" => "An error occured"]);
+        return;
+    }
 
     echo json_encode($exercise);
 }
@@ -52,14 +70,26 @@ function getExerciseInfo($exercise_sub) {
 function updateExercise($exercise_sub, $data) {
     global $db;
 
-    // Ici on ne met à jour que ce qui existe. Pour l'instant, aucune colonne 'content' dans la table, donc on laisse vide
-    // Tu peux adapter selon les colonnes que tu ajoutes plus tard
+    if (!$data || !$data['content']) {
+        http_response_code(400);
+        echo json_encode(["error" => "Content is required"]);
+        return;
+    }
+
+    if (!add_storage_file('exercises', $exercise_sub, $data['content'])) {
+        http_response_code(400);
+        echo json_encode(["error" => "An error occured"]);
+        return;
+    }
+
     http_response_code(200);
-    echo json_encode(["message" => "Update not implemented yet for exercise $exercise_sub", "data" => $data]);
+    echo json_encode(["message" => "Exercise $exercise_sub updated"]);
 }
 
 function deleteExercise($exercise_sub, $params = []) {
     global $db;
+
+    remove_storage_file('exercises', $exercise_sub);
 
     $stmt = $db->prepare("DELETE FROM exercises WHERE sub = :sub");
     $stmt->execute([':sub' => $exercise_sub]);
