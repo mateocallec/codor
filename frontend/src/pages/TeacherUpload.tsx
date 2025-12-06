@@ -7,16 +7,17 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Label } from "@/components/ui/label";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { useNavigate } from "react-router-dom";
+import { Step as AIStep, generateTasks, generateDescription } from "@/lib/ai";
+import { Loader2 } from "lucide-react";
 
-interface Step {
+interface Step extends AIStep {
   id: number;
-  description: string;
-  lineStart: number;
-  lineEnd: number;
 }
 
 const TeacherUpload = () => {
   const navigate = useNavigate();
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [isGeneratingDescription, setIsGeneratingDescription] = useState(false);
   const [title, setTitle] = useState("Build a Greeting Function");
   const [code, setCode] = useState(`function greet(name) {
   const greeting = "Hello, " + name + "!";
@@ -26,9 +27,9 @@ const TeacherUpload = () => {
 
 const result = greet("Student");
 console.log(result);`);
-  const [description, setDescription] = useState("In this exercise, you'll learn how to create a JavaScript function that takes a parameter and returns a personalized greeting. This is a fundamental skill in programming that teaches you about functions, parameters, string manipulation, and return values. You'll also practice logging output to the console for debugging purposes.");
+  const [description, setDescription] = useState(/* "In this exercise, you'll learn how to create a JavaScript function that takes a parameter and returns a personalized greeting. This is a fundamental skill in programming that teaches you about functions, parameters, string manipulation, and return values. You'll also practice logging output to the console for debugging purposes." */"");
   const [steps, setSteps] = useState<Step[]>([
-    { 
+    /* { 
       id: 1, 
       description: "Define the function with the name parameter", 
       lineStart: 1, 
@@ -69,7 +70,7 @@ console.log(result);`);
       description: "Display the returned result in the console", 
       lineStart: 8, 
       lineEnd: 8 
-    }
+    } */
   ]);
   const [selectedStep, setSelectedStep] = useState<number | null>(null);
   const [hoveredStep, setHoveredStep] = useState<number | null>(null);
@@ -108,6 +109,39 @@ console.log(result);`);
         step.id === id ? { ...step, [field]: value } : step
       )
     );
+  };
+
+  const handleGenerateTasks = async () => {
+    if (!code || !description) return;
+    
+    setIsGenerating(true);
+    try {
+      const generatedSteps = await generateTasks(code, description);
+      const stepsWithIds = generatedSteps.map((step, index) => ({
+        ...step,
+        id: index + 1
+      }));
+      setSteps(stepsWithIds);
+    } catch (error) {
+      console.error("Failed to generate tasks:", error);
+      // You might want to add a toast notification here
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
+  const handleGenerateDescription = async () => {
+    if (!code) return;
+    
+    setIsGeneratingDescription(true);
+    try {
+      const generatedDescription = await generateDescription(code);
+      setDescription(generatedDescription);
+    } catch (error) {
+      console.error("Failed to generate description:", error);
+    } finally {
+      setIsGeneratingDescription(false);
+    }
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -235,13 +269,35 @@ console.log(result);`);
           {/* Task Description */}
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Target className="h-5 w-5 text-primary" />
-                Task Description
-              </CardTitle>
-              <CardDescription>
-                AI-generated task overview (editable)
-              </CardDescription>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="flex items-center gap-2">
+                    <Target className="h-5 w-5 text-primary" />
+                    Task Description
+                  </CardTitle>
+                  <CardDescription>
+                    AI-generated task overview (editable)
+                  </CardDescription>
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleGenerateDescription}
+                  disabled={isGeneratingDescription}
+                >
+                  {isGeneratingDescription ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Generating...
+                    </>
+                  ) : (
+                    <>
+                      <Target className="mr-2 h-4 w-4" />
+                      Generate Description
+                    </>
+                  )}
+                </Button>
+              </div>
             </CardHeader>
             <CardContent>
               <Textarea
@@ -267,6 +323,24 @@ console.log(result);`);
                     AI-generated steps linked to code lines
                   </CardDescription>
                 </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleGenerateTasks}
+                  disabled={isGenerating}
+                >
+                  {isGenerating ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Generating...
+                    </>
+                  ) : (
+                    <>
+                      <Target className="mr-2 h-4 w-4" />
+                      Generate Tasks
+                    </>
+                  )}
+                </Button>
               </div>
             </CardHeader>
             <CardContent className="space-y-3">
