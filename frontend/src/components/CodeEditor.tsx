@@ -1,6 +1,8 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Play, Copy, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import Editor from "@monaco-editor/react";
+import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable";
 
 const sampleCode = `function greet(name) {
   // This function greets the user
@@ -11,11 +13,25 @@ const sampleCode = `function greet(name) {
 
 // Call the function
 const result = greet("Learner");
-console.log(result);`;
+console.log(result + " +1");`;
+
+// Example of AI function call (mock)
+// ai.call("explain", "What does this code do?");
+
+// Example of error highlighting
+// editor.highlightError(1, "Something is wrong here");
+
+
+type LogEntry = {
+  type: 'log' | 'error' | 'warn' | 'info' | 'system';
+  content: string;
+};
 
 const CodeEditor = () => {
   const [code, setCode] = useState(sampleCode);
   const [copied, setCopied] = useState(false);
+  const [logs, setLogs] = useState<LogEntry[]>([]);
+  const workerRef = useRef<Worker | null>(null);
 
   const handleCopy = () => {
     navigator.clipboard.writeText(code);
@@ -23,7 +39,51 @@ const CodeEditor = () => {
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const lines = code.split("\n");
+  const handleRun = () => {
+    setLogs([]); // Clear previous logs
+
+    // Terminate previous worker if exists
+    if (workerRef.current) {
+      workerRef.current.terminate();
+    }
+
+    // Create new worker
+    const worker = new Worker(new URL('../workers/codeExecutor.ts', import.meta.url), {
+      type: 'module'
+    });
+    workerRef.current = worker;
+
+    worker.onmessage = (e) => {
+      const { type, level, args, message, line } = e.data;
+
+      if (type === 'console') {
+        setLogs(prev => [...prev, { type: level, content: args.join(' ') }]);
+      } else if (type === 'error') {
+        setLogs(prev => [...prev, { type: 'error', content: `Error: ${message}` }]);
+      } else if (type === 'editor' && e.data.action === 'highlightError') {
+         setLogs(prev => [...prev, { type: 'error', content: `[Editor Highlight] Line ${line}: ${message}` }]);
+      } else if (type === 'ai') {
+         setLogs(prev => [...prev, { type: 'info', content: `[AI Call] ${e.data.functionName}(${e.data.args.join(', ')})` }]);
+      } else if (type === 'system' && e.data.status === 'finished') {
+         // Execution finished
+      }
+    };
+
+    worker.onerror = (err) => {
+        setLogs(prev => [...prev, { type: 'error', content: `Worker Error: ${err.message}` }]);
+    };
+
+    worker.postMessage(code);
+  };
+
+  // Cleanup worker on unmount
+  useEffect(() => {
+    return () => {
+      if (workerRef.current) {
+        workerRef.current.terminate();
+      }
+    };
+  }, []);
 
   return (
     <div className="flex h-full flex-col bg-code-bg">
@@ -55,6 +115,7 @@ const CodeEditor = () => {
           </Button>
           <Button
             size="sm"
+            onClick={handleRun}
             className="h-8 gap-1.5 bg-primary text-primary-foreground hover:bg-primary/90"
           >
             <Play className="h-4 w-4" />
@@ -63,40 +124,50 @@ const CodeEditor = () => {
         </div>
       </div>
 
-      {/* Code Area */}
-      <div className="flex flex-1 overflow-auto scrollbar-thin">
-        {/* Line Numbers */}
-        <div className="flex flex-col bg-code-bg py-4 pl-4 pr-2 text-right font-mono text-sm text-code-lineNumber select-none">
-          {lines.map((_, i) => (
-            <span key={i} className="leading-6">
-              {i + 1}
-            </span>
-          ))}
-        </div>
-
-        {/* Code Content */}
-        <div className="flex-1 py-4 pr-4">
-          <textarea
-            value={code}
-            onChange={(e) => setCode(e.target.value)}
-            className="h-full w-full resize-none bg-transparent font-mono text-sm leading-6 text-foreground outline-none"
-            spellCheck={false}
-          />
-        </div>
-      </div>
-
-      {/* Output Panel */}
-      <div className="border-t border-border">
-        <div className="flex items-center gap-2 border-b border-border px-4 py-2">
-          <span className="font-mono text-xs font-medium text-muted-foreground">
-            OUTPUT
-          </span>
-        </div>
-        <div className="h-24 overflow-auto p-4 font-mono text-sm text-muted-foreground scrollbar-thin">
-          <p className="text-code-string">{">"} Hello, Learner!</p>
-          <p className="text-code-string">{">"} Hello, Learner!</p>
-        </div>
-      </div>
+      {/* Code Area and Output Panel */}
+      <ResizablePanelGroup direction="vertical" className="flex-1">
+        <ResizablePanel defaultSize={75} minSize={20}>
+          <div className="h-full w-full overflow-hidden">
+            <Editor
+              height="100%"
+              defaultLanguage="javascript"
+              theme="vs-dark"
+              value={code}
+              onChange={(value) => setCode(value || "")}
+              options={{
+                minimap: { enabled: false },
+                fontSize: 14,
+                lineNumbers: "on",
+                scrollBeyondLastLine: false,
+                automaticLayout: true,
+              }}
+            />
+          </div>
+        </ResizablePanel>
+        
+        <ResizableHandle className="h-4 bg-border transition-colors hover:bg-primary/50" />
+        
+        <ResizablePanel defaultSize={25} minSize={10}>
+          <div className="flex h-full flex-col border-t border-border">
+            <div className="flex items-center gap-2 border-b border-border px-4 py-2">
+              <span className="font-mono text-xs font-medium text-muted-foreground">
+                OUTPUT
+              </span>
+            </div>
+            <div className="flex-1 overflow-auto p-4 font-mono text-sm text-muted-foreground scrollbar-thin">
+              {logs.length === 0 ? (
+                <p className="text-muted-foreground/50 italic">Run code to see output...</p>
+              ) : (
+                logs.map((log, i) => (
+                  <p key={i} className={`text-code-string whitespace-pre-wrap ${log.type === 'error' ? 'text-red-400' : log.type === 'info' ? 'text-blue-400' : ''}`}>
+                    {">"} {log.content}
+                  </p>
+                ))
+              )}
+            </div>
+          </div>
+        </ResizablePanel>
+      </ResizablePanelGroup>
     </div>
   );
 };
