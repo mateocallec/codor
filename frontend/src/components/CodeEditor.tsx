@@ -113,7 +113,7 @@ const CodeEditor = () => {
   return (
     <div className="flex h-full flex-col bg-code-bg">
       {/* Exercise Description */}
-      <Card className="m-4 border-primary/20 bg-gradient-to-r from-primary/5 to-blue-500/5">
+      {/* <Card className="m-4 border-primary/20 bg-gradient-to-r from-primary/5 to-blue-500/5">
         <CardContent className="flex items-start gap-3 p-4">
           <BookOpen className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
           <div className="flex-1">
@@ -123,7 +123,7 @@ const CodeEditor = () => {
             </p>
           </div>
         </CardContent>
-      </Card>
+      </Card> */}
 
       {/* Editor Header */}
       <div className="flex items-center justify-between border-b border-border px-4 py-2">
@@ -140,7 +140,7 @@ const CodeEditor = () => {
         <div className="flex items-center gap-2">
           <Button
             variant="ghost"
-            size="sm"
+            size="sm" 
             onClick={handleCopy}
             className="h-8 gap-1.5 text-muted-foreground hover:bg-gradient-to-br from-purple-600 to-blue-500"
           >
