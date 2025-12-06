@@ -1,7 +1,7 @@
 ---
 theme: apple-basic
 title: Codor Pitch
-class: text-center
+class: intro
 drawings:
   persist: false
 transition: slide-left
@@ -9,53 +9,99 @@ mdc: true
 duration: 2min
 ---
 
-# Codor
-### Your AI Teaching Assistant for Programming Education
+<div class="pt-50">
 
-<div class="pt-12">
-  <span @click="$slidev.nav.next" class="px-2 py-1 rounded cursor-pointer" hover="bg-white bg-opacity-10">
-    Let's dive in <carbon:arrow-right class="inline"/>
+# Codor
+
+
+### Intelligent Programming Education Platform
+
+</div>
+
+<div class="absolute bottom-10 flex flex-col">
+  <span class="font-100">
+    Hagenberger Fünfeck @ GDG
+  </span>
+  <span class="font-100">
+    Track C: Next-Gen Education
+  </span>
+  <span class="font-100">
+    Members: Daxerer Christoph, Karer Lukas, Jung Simon, Habermaeir Florentin, Callec Matéo
   </span>
 </div>
 
 ---
-layout: two-cols
+layout: default
+glowSeed: 18
 ---
 
-# The Problem
+# Programming Exercises in Education
 
-<v-clicks>
+<div class="mt-4 space-y-2">
 
-- 📚 **Teachers struggle** to create quality coding homework
-- ⏰ **Limited time** for individual student support
-- 🔍 **No visibility** into where students get stuck
-- 📊 **Manual grading** is time-consuming
-- ❓ **Students feel lost** without guidance
+<v-click>
 
-</v-clicks>
+<div class="flex items-center gap-6">
+  <div class="text-5xl text-green-800 opacity-20 font-bold leading-none">01</div>
+  <div class="flex-1 pt-2">
+    <h3 class="text-2xl font-bold mb-1 text-green-700 opacity-100!">Exercise Creation</h3>
+    <p class="text-lg leading-relaxed opacity-80">Creating quality programming exercises requires significant time investment for teachers.</p>
+  </div>
+</div>
 
-::right::
+</v-click>
 
-<v-clicks>
+<v-click>
 
-<div class="mt-16 text-center">
+<div class="flex items-center gap-6">
+  <div class="text-5xl text-green-800 opacity-20 font-bold leading-none">02</div>
+  <div class="flex-1 pt-2">
+    <h3 class="text-2xl font-bold mb-3 text-green-700 opacity-100!">Individual Support</h3>
+    <p class="text-lg leading-relaxed opacity-80">Supporting students 1 on 1 at home is basically impossible.</p>
+  </div>
+</div>
 
-### The Reality
+</v-click>
 
-"I don't know where my students are struggling until it's too late."
+<v-click>
 
-<div class="text-sm opacity-70 mt-4">— Every CS Professor</div>
+<div class="flex items-center gap-6">
+  <div class="text-5xl text-green-800 opacity-20 font-bold leading-none">03</div>
+  <div class="flex-1 pt-2">
+    <h3 class="text-2xl font-bold mb-3 text-green-700 opacity-100!">Visibility Gap</h3>
+    <p class="text-lg leading-relaxed opacity-80">What are students struggling with at home?</p>
+  </div>
+</div>
+
+</v-click>
+
+<v-click>
+
+<div class="flex items-center gap-6">
+  <div class="text-5xl text-green-800 opacity-20 font-bold leading-none">04</div>
+  <div class="flex-1 pt-2">
+    <h3 class="text-2xl font-bold mb-3 text-green-700 opacity-100!">Assessment Scale</h3>
+    <p class="text-lg leading-relaxed opacity-80">Grading at scale takes a lot of time.</p>
+  </div>
+</div>
+
+</v-click>
 
 </div>
 
-</v-clicks>
+<!-- 
+1. Creating quality programming exercises requires significant time investment for teachers. Many resort to reusing old exercises or finding them online, which may not align with current teaching goals.
+2. Providing individualized support to students working on programming exercises at home is nearly impossible. Teachers cannot be available to assist each student when they encounter difficulties.
+3. Students working at home is a blackbox for the teacher. Students already don't like admitting that they struggled and doing so in the next lesson is already one lesson too late to prepare for the teacher. 
+4. Grading programming exercises at scale is time-consuming. Automated grading systems often lack the nuance to assess code quality and problem-solving approaches effectively.
+-->
 
 ---
 
-# Meet Codor
+# Introducing Codor
 
 <div class="text-xl mt-8">
-A platform that transforms how programming exercises are created, assigned, and completed
+An intelligent platform that transforms how programming exercises are created, assigned, and completed
 </div>
 
 <v-clicks>
@@ -64,80 +110,15 @@ A platform that transforms how programming exercises are created, assigned, and 
 
 <div class="p-4 border rounded">
 
-### For Teachers 👨‍🏫
-Upload code → Get instant exercises with roadmaps
+### For Educators
+Upload solution code and generate structured exercises automatically
 
 </div>
 
 <div class="p-4 border rounded">
 
-### For Students 👨‍💻
-Personal AI tutor that guides, never solves
-
-</div>
-
-</div>
-
-</v-clicks>
-
----
-layout: two-cols
----
-
-# How It Works
-
-### For Teachers
-
-<v-clicks>
-
-1. 📤 **Upload** existing solution code
-2. 🤖 **AI generates** exercise description
-3. 🗺️ **Roadmap created** from 0 to complete
-4. 🚀 **Publish** to students
-5. 📊 **Monitor** progress in real-time
-
-</v-clicks>
-
-::right::
-
-<v-clicks>
-
 ### For Students
-
-1. 💻 **Receive** exercise with clear goals
-2. 🔨 **Code** in integrated environment
-3. 🆘 **Get help** when stuck (guidance, not solutions)
-4. ✅ **Run tests** anytime
-5. 📮 **Submit** when ready
-
-</v-clicks>
-
----
-
-# The Magic: AI Guidance
-
-<v-clicks>
-
-<div class="grid grid-cols-2 gap-8 mt-8">
-
-<div>
-
-### Traditional Help
-- ❌ Full solutions online
-- ❌ Copy-paste culture
-- ❌ No real learning
-- ❌ Students give up easily
-
-</div>
-
-<div>
-
-### Codor's Approach
-- ✅ **Contextual hints** based on code
-- ✅ **Highlights relevant sections**
-- ✅ **Adds inline comments**
-- ✅ **Guides step-by-step**
-- ✅ **Detects when stuck**
+Receive contextual guidance without direct solutions
 
 </div>
 
@@ -147,117 +128,90 @@ layout: two-cols
 
 ---
 
-# Teacher Dashboard
+# Creating an Assignment
 
-<div class="mt-8">
+<div class="mt-6">
+  <img src="./images/tasks.png" class="mx-auto overflow-visible w-220" />
+</div>
 
-<v-clicks>
+---
 
-### Real-Time Insights
+# Intelligent Guidance System
 
-- 📈 **Submission tracking** - Who submitted, who's working
-- ✅ **Test pass rates** - How many tests each student passes
-- 🔄 **Test run frequency** - Engagement metrics
-- 🤖 **AI evaluations** - Detailed solution assessments
-- 🎯 **Struggle points** - Where students consistently get stuck
+<div class="mt-6">
+  <img src="./images/poc-diag.svg" class="mx-auto overflow-visible w-40" />
+</div>
 
-</v-clicks>
+---
 
-<v-click>
+# Analytics Dashboard
 
-<div class="mt-6 p-4 bg-blue-500 bg-opacity-10 rounded">
+<div class="mt-6">
+  <img src="./images/dashboard.png" class="mx-auto overflow-visible w-220" />
+</div>
 
-💡 <strong>Game Changer:</strong> Know exactly what to review in next lecture based on aggregate struggle data
+---
+
+# Architecture
+
+<div class="flex gap-8 mt-4">
+
+<div class="flex-1">
+
+### Current PoC
+
+<div class="mt-6">
+  <img src="./images/poc-diag.svg" class="mx-auto overflow-visible w-40" />
+</div>
+
+<div class="mt-4 text-sm opacity-80">
+
+Simple stack, everything is in the frontend, POC life 🤟
 
 </div>
 
-</v-click>
+</div>
+
+<div class="flex-1">
+
+### Production System
+
+<div class="mt-4">
+  <img src="./images/prod-diag.svg" class="overflow-visible w-full" />
+</div>
+
+<div class="mt-4 text-sm opacity-80">
+
+Scalable Architecture:
+- Microservices backend
+- Kubernetes deployment
+- Cloud CDN for frontend
+- Sandboxed code execution
+- SSO integration
+- ...
+
+</div>
+
+</div>
 
 </div>
 
 ---
 layout: center
 class: text-center
----
-
-# Why Codor Matters
-
-<v-clicks>
-
-<div class="text-3xl font-bold mt-8">
-Fills the Gap Between
-</div>
-
-<div class="grid grid-cols-3 gap-4 mt-8 text-lg">
-
-<div>
-🏫<br/>Lecture Time
-</div>
-
-<div class="text-4xl">
-→ 🤖 →
-</div>
-
-<div>
-🏠<br/>Independent Work
-</div>
-
-</div>
-
-<div class="mt-12 text-xl">
-Personal tutor for every student<br/>
-Actionable insights for every teacher
-</div>
-
-</v-clicks>
-
----
-layout: two-cols
----
-
-# The Impact
-
-<v-clicks>
-
-### For Education
-
-- 🎓 Better learning outcomes
-- 📚 Higher quality homework
-- ⚡ Faster feedback loops
-- 💪 More confident students
-- 📊 Data-driven teaching
-
-</v-clicks>
-
-::right::
-
-<v-clicks>
-
-### For Teachers
-
-- ⏱️ Save hours on prep
-- 🔍 Understand student struggles
-- 📈 Track progress effortlessly
-- 🎯 Focus on what matters
-- 🚀 Scale personalized education
-
-</v-clicks>
-
----
-layout: center
-class: text-center
+glowSeed: 225
 ---
 
 # Codor
 
 <div class="text-2xl mt-8 opacity-80">
-Empowering teachers to teach better<br/>
-Empowering students to learn smarter
+Enhancing teaching effectiveness<br/>
+Enabling independent learning
 </div>
 
 <div class="mt-16">
   <div class="text-3xl font-bold">
-    🚀 Ready to Transform Programming Education
+    Transforming Programming Education
   </div>
 </div>
 

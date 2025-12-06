@@ -160,15 +160,15 @@ console.log(currentSlideRoute)
       aria-hidden="true"
     >
       <div
-        class="clip bg-gradient-to-r from-[#a3ceff] to-[#8a9596]"
+        class="clip bg-gradient-to-r from-[#23ffb8] to-[#F9D56E]"
         :style="{ 'clip-path': `polygon(${poly1})`, 'opacity': opacity }"
       />
       <div
-        class="clip bg-gradient-to-l from-[#f0f8fa] to-[#8a9596]"
+        class="clip bg-gradient-to-l from-[#d4f7e3] to-[#cc9672]"
         :style="{ 'clip-path': `polygon(${poly2})`, 'opacity': opacity }"
       />
       <div
-        class="clip bg-gradient-to-t from-[#05c3f2] to-[#8a9596]"
+        class="clip bg-gradient-to-t from-[#44d399] to-[#72A6E2]"
         :style="{ 'clip-path': `polygon(${poly3})`, 'opacity': 0.2 }"
       />
     </div>
