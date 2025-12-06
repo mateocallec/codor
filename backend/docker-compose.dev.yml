@@ -6,14 +6,14 @@ services:
     depends_on:
       - gdg_linz_backend_db
     ports:
-      - "7100:80"
+      - "8080:80"
     environment:
       - DB_NAME=${DB_NAME}
       - DB_HOST=gdg_linz_backend_db
       - DB_USER=${DB_USER}
       - DB_PASSWORD=${DB_PASSWORD}
-      - ./container-data/storage:/storage
     volumes:
+      - ./app/:/var/www/html/
       - ./container-data/storage:/storage
     networks:
       - gdg_linz_backend_net
@@ -31,6 +31,23 @@ services:
       - ./db/users.sql:/docker-entrypoint-initdb.d/users.sql
       - ./db/exercises.sql:/docker-entrypoint-initdb.d/exercises.sql
       - ./container-data/mysql:/var/lib/mysql
+    networks:
+      - gdg_linz_backend_net
+
+  gdg_linz_backend_phpmyadmin:
+    image: phpmyadmin/phpmyadmin:latest
+    container_name: gdg_linz_backend_phpmyadmin
+    restart: unless-stopped
+    depends_on:
+      - gdg_linz_backend_db
+    ports:
+      - "8081:80"
+    environment:
+      - PMA_HOST=gdg_linz_backend_db
+      - PMA_PORT=3306
+      - PMA_USER=root
+      - PMA_PASSWORD=${DB_ROOT_PASSWORD}
+      - PMA_ARBITRARY=1
     networks:
       - gdg_linz_backend_net
 
