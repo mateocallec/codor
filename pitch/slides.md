@@ -131,7 +131,7 @@ Receive contextual guidance without direct solutions
 # Creating an Assignment
 
 <div class="mt-6">
-  <img src="./images/tasks.png" class="mx-auto overflow-visible w-220" />
+  <img src="./images/tasks.png" class="overflow-visible w-full" />
 </div>
 
 ---
@@ -139,7 +139,7 @@ Receive contextual guidance without direct solutions
 # Intelligent Guidance System
 
 <div class="mt-6">
-  <img src="./images/guidance.png" class="mx-auto overflow-visible w-220" />
+  <img src="./images/guidance.png" class="overflow-visible w-full" />
 </div>
 
 ---
@@ -147,7 +147,7 @@ Receive contextual guidance without direct solutions
 # Analytics Dashboard
 
 <div class="mt-6">
-  <img src="./images/dashboard.png" class="mx-auto overflow-visible w-220" />
+  <img src="./images/dashboard.png" class="overflow-visible w-full" />
 </div>
 
 ---
