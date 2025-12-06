@@ -106,7 +106,7 @@ An intelligent platform that transforms how programming exercises are created, a
 
 <v-clicks>
 
-<div class="mt-8 grid grid-cols-2 gap-4">
+<div class="mt-28 grid grid-cols-2 gap-4">
 
 <div class="p-4 border rounded">
 

@@ -173,7 +173,7 @@ console.log(currentSlideRoute)
       />
     </div>
   </div>
-  <footer class="absolute bottom-0 right-0 right-0 p-2">
+  <footer v-if="currentSlideRoute.no !== 1" class="absolute bottom-0 right-0 right-0 p-2">
     {{currentSlideRoute.no}}/{{ total }}
   </footer>
 </template>
