@@ -2,7 +2,6 @@
 
 **Goal:** Win money!
 
-
 Flow:
 
 1. Prof lädt fertiges Code-Beispiel hoch (python file)
@@ -12,11 +11,9 @@ Flow:
 5. Der KI-Tutor überprüft den Code auf richtigkeit und vergibt Punkte
 6. Der Lehrer sieht die Bewertung und kann die Aufgabe überprüfen
 
-
 Lehrer-Upload Page (Nur Frontend)
-Student View mit IDE + ChatBot 
+Student View mit IDE + ChatBot
 Lehrer Bewertungs-View (nur Frontend)
-
 
 KI muss:
 Code analysieren
