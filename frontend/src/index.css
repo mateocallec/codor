@@ -1,12 +1,24 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
 
 @import "@fontsource/jetbrains-mono/400.css";
 @import "@fontsource/jetbrains-mono/500.css";
 @import "@fontsource/inter/400.css";
 @import "@fontsource/inter/500.css";
 @import "@fontsource/inter/600.css";
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Custom Monaco line highlight styling */
+.editor-line-highlight {
+  background-color: rgba(250, 204, 21, 0.15); /* yellow-400 w/ alpha */
+  border-left: 3px solid #facc15;
+}
+
+.editor-line-highlight-margin {
+  border-left: 3px solid #facc15;
+}
+
 
 @layer base {
   :root {

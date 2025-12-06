@@ -1,4 +1,6 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
+import Editor, { OnMount } from "@monaco-editor/react";
+import type * as Monaco from "monaco-editor";
 import { Play, Copy, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -17,13 +19,74 @@ const CodeEditor = () => {
   const [code, setCode] = useState(sampleCode);
   const [copied, setCopied] = useState(false);
 
+  // Example: lines coming from an API (1-based)
+  const [highlightedLines, setHighlightedLines] = useState<number[]>([3, 7]);
+
+  // Monaco refs
+  const editorRef = useRef<Monaco.editor.IStandaloneCodeEditor | null>(null);
+  const monacoRef = useRef<typeof Monaco | null>(null);
+  const decorationsRef = useRef<string[]>([]);
+
   const handleCopy = () => {
     navigator.clipboard.writeText(code);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const lines = code.split("\n");
+  const handleEditorChange = (value?: string) => {
+    setCode(value ?? "");
+  };
+
+  const handleEditorDidMount: OnMount = (
+    editor,
+    monaco: typeof Monaco
+  ) => {
+    editorRef.current = editor;
+    monacoRef.current = monaco;
+
+    // Optional: custom dark theme (otherwise you can just use "vs-dark")
+    monaco.editor.defineTheme("code-dark-theme", {
+      base: "vs-dark",
+      inherit: true,
+      rules: [
+        { token: "comment", foreground: "6A9955" },
+        { token: "string", foreground: "CE9178" },
+        { token: "keyword", foreground: "C586C0" },
+        { token: "number", foreground: "B5CEA8" },
+      ],
+      colors: {
+        "editor.background": "#020617", // bg-code-bg / slate-950
+        "editor.lineHighlightBackground": "#1f29334d",
+        "editorLineNumber.foreground": "#64748b",
+        "editorLineNumber.activeForeground": "#e5e7eb",
+        "editorCursor.foreground": "#facc15",
+      },
+    });
+
+    monaco.editor.setTheme("code-dark-theme");
+  };
+
+  // Apply / update line highlighting decorations
+  useEffect(() => {
+    if (!editorRef.current || !monacoRef.current) return;
+    const editor = editorRef.current;
+    const monaco = monacoRef.current;
+
+    const newDecorations =
+      highlightedLines.map((line) => ({
+        range: new monaco.Range(line, 1, line, 1),
+        options: {
+          isWholeLine: true,
+          className: "editor-line-highlight",
+          marginClassName: "editor-line-highlight-margin",
+        },
+      })) ?? [];
+
+    decorationsRef.current = editor.deltaDecorations(
+      decorationsRef.current,
+      newDecorations
+    );
+  }, [highlightedLines]);
 
   return (
     <div className="flex h-full flex-col bg-code-bg">
@@ -64,25 +127,25 @@ const CodeEditor = () => {
       </div>
 
       {/* Code Area */}
-      <div className="flex flex-1 overflow-auto scrollbar-thin">
-        {/* Line Numbers */}
-        <div className="flex flex-col bg-code-bg py-4 pl-4 pr-2 text-right font-mono text-sm text-code-lineNumber select-none">
-          {lines.map((_, i) => (
-            <span key={i} className="leading-6">
-              {i + 1}
-            </span>
-          ))}
-        </div>
-
-        {/* Code Content */}
-        <div className="flex-1 py-4 pr-4">
-          <textarea
-            value={code}
-            onChange={(e) => setCode(e.target.value)}
-            className="h-full w-full resize-none bg-transparent font-mono text-sm leading-6 text-foreground outline-none"
-            spellCheck={false}
-          />
-        </div>
+      <div className="flex-1 overflow-hidden">
+        <Editor
+          height="100%"
+          value={code}
+          onChange={handleEditorChange}
+          language="javascript" // later you can make this dynamic (JS/Python)
+          theme="code-dark-theme"
+          onMount={handleEditorDidMount}
+          options={{
+            fontSize: 14,
+            minimap: { enabled: true },
+            scrollBeyondLastLine: false,
+            smoothScrolling: true,
+            automaticLayout: true,
+            wordWrap: "on",
+            tabSize: 2,
+            insertSpaces: true,
+          }}
+        />
       </div>
 
       {/* Output Panel */}
