@@ -82,11 +82,11 @@ function getExerciseInfo($exercise_sub) {
     // Load exercise content from storage
     $exercise->content = read_storage_file('exercises', $exercise_sub);
 
-    if (!$exercise->content) {
-        http_response_code(400);
-        echo json_encode(["error" => "An error occured"]);
-        return;
-    }
+    //if (!$exercise->content) {
+    //    http_response_code(400);
+    //    echo json_encode(["error" => "An error occured"]);
+    //    return;
+    //}
 
     echo json_encode($exercise);
 }
