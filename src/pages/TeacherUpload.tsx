@@ -200,7 +200,7 @@ console.log(result);`);
 
             <div className="flex flex-1 overflow-auto scrollbar-thin">
               {/* Line Numbers */}
-              <div className="flex flex-col bg-code-bg py-4 pl-4 pr-2 text-right font-mono text-sm text-code-lineNumber select-none relative">
+              <div className="flex flex-col py-4 pl-4 pr-8 text-right font-mono text-sm text-code-lineNumber select-none relative">
                 {codeLines.map((_, i) => {
                   const lineNum = i + 1;
                   const activeStep = hoveredStep || selectedStep;
@@ -230,8 +230,9 @@ console.log(result);`);
                   
                   return step && color ? (
                     <div 
-                      className={`absolute left-0 right-0 ${color.bg} pointer-events-none transition-all duration-200 border-l-4 ${color.border}`}
+                      className={`absolute right-0 ${color.bg} pointer-events-none transition-all duration-200 border-l-4 ${color.border}`}
                       style={{ 
+                        left: '-8px',
                         top: `${((step.lineStart || 1) - 1) * 24 + 16}px`,
                         height: `${((step.lineEnd || 1) - (step.lineStart || 1) + 1) * 24}px`
                       }}
