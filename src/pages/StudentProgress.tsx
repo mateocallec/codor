@@ -1,14 +1,9 @@
 import { useState } from "react";
-import { Code, ArrowLeft, ChevronDown, ChevronRight, MessageSquare } from "lucide-react";
+import { Code, ArrowLeft, User, Clock, MessageSquare, Award } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { useNavigate } from "react-router-dom";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
 
 interface StudentSubmission {
   studentId: number;
@@ -102,22 +97,17 @@ const mockExercises: Exercise[] = [
 
 const StudentProgress = () => {
   const navigate = useNavigate();
-  const [openExercises, setOpenExercises] = useState<number[]>([1]);
-
-  const toggleExercise = (id: number) => {
-    setOpenExercises(prev =>
-      prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
-    );
-  };
+  const [selectedExercise, setSelectedExercise] = useState<number | null>(1);
+  const [selectedStudent, setSelectedStudent] = useState<number | null>(null);
 
   const getStatusColor = (status: string) => {
     switch (status) {
       case "completed":
-        return "bg-green-500/10 text-green-500 border-green-500/20";
+        return "bg-green-500/20 text-green-600 dark:text-green-400 border-green-500/40";
       case "in-progress":
-        return "bg-yellow-500/10 text-yellow-500 border-yellow-500/20";
+        return "bg-yellow-500/20 text-yellow-600 dark:text-yellow-400 border-yellow-500/40";
       case "not-started":
-        return "bg-gray-500/10 text-gray-500 border-gray-500/20";
+        return "bg-gray-500/20 text-gray-600 dark:text-gray-400 border-gray-500/40";
       default:
         return "";
     }
@@ -125,15 +115,18 @@ const StudentProgress = () => {
 
   const getScoreColor = (score: number | null) => {
     if (score === null) return "";
-    if (score >= 90) return "text-green-500";
-    if (score >= 70) return "text-yellow-500";
-    return "text-red-500";
+    if (score >= 90) return "text-green-600 dark:text-green-400";
+    if (score >= 70) return "text-yellow-600 dark:text-yellow-400";
+    return "text-red-600 dark:text-red-400";
   };
+
+  const selectedExerciseData = mockExercises.find(e => e.id === selectedExercise);
+  const selectedStudentData = selectedExerciseData?.submissions.find(s => s.studentId === selectedStudent);
 
   return (
     <div className="flex h-screen flex-col">
       {/* Header */}
-      <header className="border-b border-border bg-secondary px-6 py-4">
+      <header className="border-b border-border px-6 py-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <Button
@@ -157,96 +150,171 @@ const StudentProgress = () => {
       </header>
 
       {/* Main Content */}
-      <main className="flex-1 overflow-auto p-6">
-        <div className="mx-auto max-w-6xl space-y-4">
+      <main className="flex flex-1 overflow-hidden">
+        {/* Left Sidebar - Exercise List */}
+        <div className="w-80 border-r border-border overflow-auto p-4 space-y-2">
+          <h2 className="text-sm font-semibold text-muted-foreground mb-3 px-2">EXERCISES</h2>
           {mockExercises.map((exercise) => (
-            <Collapsible
+            <Card
               key={exercise.id}
-              open={openExercises.includes(exercise.id)}
-              onOpenChange={() => toggleExercise(exercise.id)}
+              className={`cursor-pointer transition-all hover:scale-[1.02] backdrop-blur-md bg-white/40 dark:bg-slate-900/40 ${
+                selectedExercise === exercise.id
+                  ? "border-primary shadow-lg shadow-primary/20"
+                  : "hover:border-primary/50"
+              }`}
+              onClick={() => {
+                setSelectedExercise(exercise.id);
+                setSelectedStudent(null);
+              }}
             >
-              <Card>
-                <CollapsibleTrigger className="w-full">
-                  <CardHeader className="cursor-pointer hover:bg-muted/50 transition-colors">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        {openExercises.includes(exercise.id) ? (
-                          <ChevronDown className="h-5 w-5 text-muted-foreground" />
-                        ) : (
-                          <ChevronRight className="h-5 w-5 text-muted-foreground" />
-                        )}
-                        <div className="text-left">
-                          <CardTitle>{exercise.title}</CardTitle>
-                          <CardDescription>
-                            {exercise.submissions.length} student{exercise.submissions.length !== 1 ? "s" : ""}
-                          </CardDescription>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm text-muted-foreground">
-                          {exercise.submissions.filter(s => s.status === "completed").length}/{exercise.submissions.length} completed
-                        </span>
-                      </div>
-                    </div>
-                  </CardHeader>
-                </CollapsibleTrigger>
-
-                <CollapsibleContent>
-                  <CardContent className="space-y-3 pt-0">
-                    {exercise.submissions.map((submission) => (
-                      <Card key={submission.studentId} className="border-l-4 border-l-primary/20">
-                        <CardHeader className="pb-3">
-                          <div className="flex items-start justify-between">
-                            <div className="flex-1">
-                              <div className="flex items-center gap-3">
-                                <CardTitle className="text-lg">{submission.studentName}</CardTitle>
-                                <span
-                                  className={`rounded-full border px-2 py-0.5 text-xs font-medium ${getStatusColor(
-                                    submission.status
-                                  )}`}
-                                >
-                                  {submission.status.replace("-", " ")}
-                                </span>
-                              </div>
-                              <div className="mt-2 flex items-center gap-4 text-sm text-muted-foreground">
-                                <span>⏱️ {submission.timeSpent}</span>
-                                <span className="flex items-center gap-1">
-                                  <MessageSquare className="h-3 w-3" />
-                                  {submission.aiInteractions} AI interactions
-                                </span>
-                                {submission.score !== null && (
-                                  <span className={`font-semibold ${getScoreColor(submission.score)}`}>
-                                    Score: {submission.score}%
-                                  </span>
-                                )}
-                              </div>
-                            </div>
-                          </div>
-                        </CardHeader>
-                        {submission.commonIssues.length > 0 && (
-                          <CardContent>
-                            <div className="rounded-lg bg-muted/50 p-3">
-                              <h4 className="mb-2 text-sm font-medium text-foreground">
-                                Common Issues & AI Interactions:
-                              </h4>
-                              <ul className="space-y-1">
-                                {submission.commonIssues.map((issue, index) => (
-                                  <li key={index} className="text-sm text-muted-foreground flex gap-2">
-                                    <span className="text-primary">•</span>
-                                    <span>{issue}</span>
-                                  </li>
-                                ))}
-                              </ul>
-                            </div>
-                          </CardContent>
-                        )}
-                      </Card>
-                    ))}
-                  </CardContent>
-                </CollapsibleContent>
-              </Card>
-            </Collapsible>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base">{exercise.title}</CardTitle>
+                <CardDescription className="flex items-center gap-2 text-xs">
+                  <User className="h-3 w-3" />
+                  {exercise.submissions.length} students
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="pt-0">
+                <div className="flex items-center justify-between text-xs">
+                  <span className="text-muted-foreground">Completed</span>
+                  <span className="font-semibold text-primary">
+                    {exercise.submissions.filter(s => s.status === "completed").length}/{exercise.submissions.length}
+                  </span>
+                </div>
+              </CardContent>
+            </Card>
           ))}
+        </div>
+
+        {/* Middle - Student List */}
+        {selectedExerciseData && (
+          <div className="w-96 border-r border-border overflow-auto p-4 space-y-2">
+            <h2 className="text-sm font-semibold text-muted-foreground mb-3 px-2">STUDENTS</h2>
+            {selectedExerciseData.submissions.map((submission) => (
+              <Card
+                key={submission.studentId}
+                className={`cursor-pointer transition-all hover:scale-[1.02] backdrop-blur-md bg-white/40 dark:bg-slate-900/40 ${
+                  selectedStudent === submission.studentId
+                    ? "border-primary shadow-lg shadow-primary/20"
+                    : "hover:border-primary/50"
+                }`}
+                onClick={() => setSelectedStudent(submission.studentId)}
+              >
+                <CardHeader className="pb-3">
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="text-base">{submission.studentName}</CardTitle>
+                    <span
+                      className={`rounded-full border px-2 py-0.5 text-xs font-medium ${getStatusColor(
+                        submission.status
+                      )}`}
+                    >
+                      {submission.status.replace("-", " ")}
+                    </span>
+                  </div>
+                </CardHeader>
+                <CardContent className="pt-0 space-y-2">
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                    <Clock className="h-3 w-3" />
+                    {submission.timeSpent}
+                  </div>
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                    <MessageSquare className="h-3 w-3" />
+                    {submission.aiInteractions} AI chats
+                  </div>
+                  {submission.score !== null && (
+                    <div className="flex items-center gap-2 text-xs">
+                      <Award className="h-3 w-3 text-primary" />
+                      <span className={`font-semibold ${getScoreColor(submission.score)}`}>
+                        {submission.score}%
+                      </span>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        )}
+
+        {/* Right - Student Details */}
+        <div className="flex-1 overflow-auto p-6">
+          {selectedStudentData ? (
+            <div className="mx-auto max-w-3xl space-y-6">
+              <div>
+                <h2 className="text-2xl font-bold text-foreground">{selectedStudentData.studentName}</h2>
+                <p className="text-muted-foreground">{selectedExerciseData?.title}</p>
+              </div>
+
+              {/* Stats Grid */}
+              <div className="grid gap-4 md:grid-cols-3">
+                <Card className="backdrop-blur-md bg-white/40 dark:bg-slate-900/40">
+                  <CardHeader className="pb-3">
+                    <CardDescription className="flex items-center gap-2 text-xs">
+                      <Clock className="h-4 w-4" />
+                      Time Spent
+                    </CardDescription>
+                    <CardTitle className="text-2xl">{selectedStudentData.timeSpent}</CardTitle>
+                  </CardHeader>
+                </Card>
+                <Card className="backdrop-blur-md bg-white/40 dark:bg-slate-900/40">
+                  <CardHeader className="pb-3">
+                    <CardDescription className="flex items-center gap-2 text-xs">
+                      <MessageSquare className="h-4 w-4" />
+                      AI Interactions
+                    </CardDescription>
+                    <CardTitle className="text-2xl">{selectedStudentData.aiInteractions}</CardTitle>
+                  </CardHeader>
+                </Card>
+                <Card className="backdrop-blur-md bg-white/40 dark:bg-slate-900/40">
+                  <CardHeader className="pb-3">
+                    <CardDescription className="flex items-center gap-2 text-xs">
+                      <Award className="h-4 w-4" />
+                      Score
+                    </CardDescription>
+                    <CardTitle className={`text-2xl ${getScoreColor(selectedStudentData.score)}`}>
+                      {selectedStudentData.score !== null ? `${selectedStudentData.score}%` : "N/A"}
+                    </CardTitle>
+                  </CardHeader>
+                </Card>
+              </div>
+
+              {/* Issues Section */}
+              {selectedStudentData.commonIssues.length > 0 && (
+                <Card className="backdrop-blur-md bg-white/40 dark:bg-slate-900/40">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <MessageSquare className="h-5 w-5 text-primary" />
+                      AI Tutor Interactions
+                    </CardTitle>
+                    <CardDescription>
+                      Questions and topics discussed with the AI tutor
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <ul className="space-y-3">
+                      {selectedStudentData.commonIssues.map((issue, index) => (
+                        <li key={index} className="flex gap-3 p-3 rounded-lg bg-muted/30 backdrop-blur-sm">
+                          <div className="flex h-6 w-6 items-center justify-center rounded-full bg-primary/20 text-xs font-semibold text-primary flex-shrink-0">
+                            {index + 1}
+                          </div>
+                          <span className="text-sm text-foreground">{issue}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </CardContent>
+                </Card>
+              )}
+            </div>
+          ) : (
+            <div className="flex h-full items-center justify-center">
+              <div className="text-center">
+                <User className="mx-auto h-12 w-12 text-muted-foreground/50" />
+                <h3 className="mt-4 text-lg font-semibold text-foreground">No student selected</h3>
+                <p className="mt-2 text-sm text-muted-foreground">
+                  Select a student from the list to view their progress
+                </p>
+              </div>
+            </div>
+          )}
         </div>
       </main>
     </div>
