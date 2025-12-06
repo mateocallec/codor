@@ -15,12 +15,22 @@ const sampleCode = `function greet(name) {
 const result = greet("Learner");
 console.log(result);`;
 
+// 👉 Fake "API" that returns line numbers to highlight after 1.5s
+async function fetchHighlightedLinesMock(): Promise<number[]> {
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      // highlight lines 2 and 7 for testing (1-based)
+      resolve([2, 7]);
+    }, 1500);
+  });
+}
+
 const CodeEditor = () => {
   const [code, setCode] = useState(sampleCode);
   const [copied, setCopied] = useState(false);
 
-  // Example: lines coming from an API (1-based)
-  const [highlightedLines, setHighlightedLines] = useState<number[]>([3, 7]);
+  // Highlight data (normally comes from a real API)
+  const [highlightedLines, setHighlightedLines] = useState<number[]>([]);
 
   // Monaco refs
   const editorRef = useRef<Monaco.editor.IStandaloneCodeEditor | null>(null);
@@ -44,7 +54,7 @@ const CodeEditor = () => {
     editorRef.current = editor;
     monacoRef.current = monaco;
 
-    // Optional: custom dark theme (otherwise you can just use "vs-dark")
+    // Optional: custom dark theme (you can keep vs-dark if you prefer)
     monaco.editor.defineTheme("code-dark-theme", {
       base: "vs-dark",
       inherit: true,
@@ -55,7 +65,7 @@ const CodeEditor = () => {
         { token: "number", foreground: "B5CEA8" },
       ],
       colors: {
-        "editor.background": "#020617", // bg-code-bg / slate-950
+        "editor.background": "#020617", // matches bg-background-ish
         "editor.lineHighlightBackground": "#1f29334d",
         "editorLineNumber.foreground": "#64748b",
         "editorLineNumber.activeForeground": "#e5e7eb",
@@ -66,9 +76,25 @@ const CodeEditor = () => {
     monaco.editor.setTheme("code-dark-theme");
   };
 
-  // Apply / update line highlighting decorations
+  // 👉 Fake API call on mount: later you replace this with your real API
+  useEffect(() => {
+    let cancelled = false;
+
+    fetchHighlightedLinesMock().then((lines) => {
+      if (!cancelled) {
+        setHighlightedLines(lines);
+      }
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  // Apply / update line highlighting whenever highlightedLines changes
   useEffect(() => {
     if (!editorRef.current || !monacoRef.current) return;
+
     const editor = editorRef.current;
     const monaco = monacoRef.current;
 
@@ -126,13 +152,13 @@ const CodeEditor = () => {
         </div>
       </div>
 
-      {/* Code Area */}
+      {/* Monaco Editor */}
       <div className="flex-1 overflow-hidden">
         <Editor
           height="100%"
           value={code}
           onChange={handleEditorChange}
-          language="javascript" // later you can make this dynamic (JS/Python)
+          language="javascript" // you can later make this dynamic
           theme="code-dark-theme"
           onMount={handleEditorDidMount}
           options={{
