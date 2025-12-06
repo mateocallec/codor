@@ -1,4 +1,4 @@
-import { GoogleGenAI, Type, Content, Part } from '@google/genai';
+import { GoogleGenAI, Type, Content, Part, FunctionCallingConfigMode } from '@google/genai';
 import { Message, CodeHighlight } from '@/contexts/AppContext';
 
 // Configure the Gemini client
@@ -33,6 +33,63 @@ const highlightCodeFunctionDeclaration = {
     required: ['start_line', 'end_line'],
   },
 };
+
+// Define the generate_tasks tool for the model
+const generateTasksFunctionDeclaration = {
+  name: 'generate_tasks',
+  description: 'Generates a list of educational tasks/steps based on the code.',
+  parameters: {
+    type: Type.OBJECT,
+    properties: {
+      tasks: {
+        type: Type.ARRAY,
+        description: 'The list of tasks.',
+        items: {
+          type: Type.OBJECT,
+          properties: {
+            description: {
+              type: Type.STRING,
+              description: 'Description of the task.',
+            },
+            lineStart: {
+              type: Type.INTEGER,
+              description: 'Start line number.',
+            },
+            lineEnd: {
+              type: Type.INTEGER,
+              description: 'End line number.',
+            },
+          },
+          required: ['description', 'lineStart', 'lineEnd'],
+        },
+      },
+    },
+    required: ['tasks'],
+  },
+};
+
+// Define the generate_description tool for the model
+const generateDescriptionFunctionDeclaration = {
+  name: 'generate_description',
+  description: 'Generates a comprehensive project description based on the code.',
+  parameters: {
+    type: Type.OBJECT,
+    properties: {
+      description: {
+        type: Type.STRING,
+        description: 'The generated project description.',
+      },
+    },
+    required: ['description'],
+  },
+};
+
+export interface Step {
+  description: string;
+  lineStart: number;
+  lineEnd: number;
+}
+
 
 // System prompt for the tutor
 const SYSTEM_PROMPT = `You are a friendly and patient programming tutor helping students learn to code. Your goal is to:
@@ -157,4 +214,113 @@ export function handleHighlightCode(args: Record<string, unknown>): CodeHighligh
   };
   console.log('[Gemini] Created highlight:', highlight);
   return highlight;
+}
+/**
+ * Generates tasks from code and description using the generate_tasks tool
+ */
+export async function generateTasks(code: string, description: string): Promise<Step[]> {
+  try {
+    const prompt = `You are an expert programming tutor.
+Your goal is to break down the provided code into a series of high-level, educational tasks or steps that a student would follow to build this code.
+
+For each task:
+1. Provide a clear, concise description of what needs to be done.
+2. Identify the specific lines of code (start and end) that correspond to this task.
+3. Ensure the tasks are in logical order.
+4. Use the \`generate_tasks\` tool to return the result.
+
+Code:
+${code}
+
+Description:
+${description}
+`;
+
+    const result = await ai.models.generateContent({
+      model: 'gemini-2.5-flash-lite',
+      contents: [
+        {
+          role: 'user',
+          parts: [{ text: prompt }]
+        }
+      ],
+      config: {
+        tools: [{
+          functionDeclarations: [generateTasksFunctionDeclaration]
+        }],
+        toolConfig: {
+          functionCallingConfig: {
+            mode: FunctionCallingConfigMode.ANY,
+            allowedFunctionNames: ['generate_tasks']
+          }
+        }
+      }
+    });
+
+    const funcCalls = result.functionCalls;
+    
+    if (funcCalls && funcCalls.length > 0) {
+      const call = funcCalls[0];
+      if (call.name === 'generate_tasks') {
+        return call.args.tasks as Step[];
+      }
+    }
+    
+    return [];
+  } catch (error) {
+    console.error('Error generating tasks:', error);
+    throw error;
+  }
+}
+
+/**
+ * Generates a project description from code using the generate_description tool
+ */
+export async function generateDescription(code: string): Promise<string> {
+  try {
+    const prompt = `You are an expert programming tutor.
+Your goal is to generate a comprehensive and educational description for the provided code.
+The description should explain what the code does. dO NOT include implementation details or step-by-step instructions as the student should do it himself.
+
+Code:
+${code}
+
+Use the \`generate_description\` tool to return the result.
+`;
+
+    const result = await ai.models.generateContent({
+      model: 'gemini-2.5-flash-lite',
+      contents: [
+        {
+          role: 'user',
+          parts: [{ text: prompt }]
+        }
+      ],
+      config: {
+        tools: [{
+          functionDeclarations: [generateDescriptionFunctionDeclaration]
+        }],
+        toolConfig: {
+          functionCallingConfig: {
+            mode: FunctionCallingConfigMode.ANY,
+            allowedFunctionNames: ['generate_description']
+          }
+        }
+      }
+    });
+
+    const funcCalls = result.functionCalls;
+    
+    if (funcCalls && funcCalls.length > 0) {
+      const call = funcCalls[0];
+      if (call.name === 'generate_description') {
+        return call.args.description as string;
+      }
+    }
+    
+    return '';
+  } catch (error) {
+    console.error('Error generating description:', error);
+    throw error;
+  }
 }

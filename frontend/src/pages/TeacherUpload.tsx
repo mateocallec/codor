@@ -7,16 +7,17 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Label } from "@/components/ui/label";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { useNavigate } from "react-router-dom";
+import { Step as AIStep, generateTasks, generateDescription } from "@/lib/ai";
+import { Loader2 } from "lucide-react";
 
-interface Step {
+interface Step extends AIStep {
   id: number;
-  description: string;
-  lineStart: number;
-  lineEnd: number;
 }
 
 const TeacherUpload = () => {
   const navigate = useNavigate();
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [isGeneratingDescription, setIsGeneratingDescription] = useState(false);
   const [title, setTitle] = useState("Build a Greeting Function");
   const [code, setCode] = useState(`function greet(name) {
   const greeting = "Hello, " + name + "!";
@@ -26,9 +27,9 @@ const TeacherUpload = () => {
 
 const result = greet("Student");
 console.log(result);`);
-  const [description, setDescription] = useState("In this exercise, you'll learn how to create a JavaScript function that takes a parameter and returns a personalized greeting. This is a fundamental skill in programming that teaches you about functions, parameters, string manipulation, and return values. You'll also practice logging output to the console for debugging purposes.");
+  const [description, setDescription] = useState(/* "In this exercise, you'll learn how to create a JavaScript function that takes a parameter and returns a personalized greeting. This is a fundamental skill in programming that teaches you about functions, parameters, string manipulation, and return values. You'll also practice logging output to the console for debugging purposes." */"");
   const [steps, setSteps] = useState<Step[]>([
-    { 
+    /* { 
       id: 1, 
       description: "Define the function with the name parameter", 
       lineStart: 1, 
@@ -69,7 +70,7 @@ console.log(result);`);
       description: "Display the returned result in the console", 
       lineStart: 8, 
       lineEnd: 8 
-    }
+    } */
   ]);
   const [selectedStep, setSelectedStep] = useState<number | null>(null);
   const [hoveredStep, setHoveredStep] = useState<number | null>(null);
@@ -83,6 +84,27 @@ console.log(result);`);
       lineEnd: 1,
     };
     setSteps([...steps, newStep]);
+  };
+
+  const addStepAfter = (afterId: number) => {
+    const afterIndex = steps.findIndex(s => s.id === afterId);
+    const afterStep = steps[afterIndex];
+    const nextStep = steps[afterIndex + 1];
+    
+    // Calculate appropriate line numbers between the two steps
+    const newLineStart = afterStep.lineEnd + 1;
+    const newLineEnd = nextStep ? Math.min(newLineStart, nextStep.lineStart - 1) : newLineStart;
+    
+    const newStep: Step = {
+      id: Math.max(...steps.map(s => s.id), 0) + 1,
+      description: "",
+      lineStart: newLineStart <= newLineEnd ? newLineStart : afterStep.lineEnd,
+      lineEnd: newLineStart <= newLineEnd ? newLineEnd : afterStep.lineEnd,
+    };
+    const newSteps = [...steps];
+    newSteps.splice(afterIndex + 1, 0, newStep);
+    setSteps(newSteps);
+    setEditingStep(newStep.id);
   };
 
   const getStepColor = (stepId: number) => {
@@ -110,6 +132,39 @@ console.log(result);`);
     );
   };
 
+  const handleGenerateTasks = async () => {
+    if (!code || !description) return;
+    
+    setIsGenerating(true);
+    try {
+      const generatedSteps = await generateTasks(code, description);
+      const stepsWithIds = generatedSteps.map((step, index) => ({
+        ...step,
+        id: index + 1
+      }));
+      setSteps(stepsWithIds);
+    } catch (error) {
+      console.error("Failed to generate tasks:", error);
+      // You might want to add a toast notification here
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
+  const handleGenerateDescription = async () => {
+    if (!code) return;
+    
+    setIsGeneratingDescription(true);
+    try {
+      const generatedDescription = await generateDescription(code);
+      setDescription(generatedDescription);
+    } catch (error) {
+      console.error("Failed to generate description:", error);
+    } finally {
+      setIsGeneratingDescription(false);
+    }
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     console.log("Task submitted:", { title, code, description, steps });
@@ -118,15 +173,15 @@ console.log(result);`);
   const codeLines = code.split("\n");
 
   return (
-    <div className="flex h-screen flex-col bg-background">
+    <div className="flex h-screen flex-col">
       {/* Header */}
-      <header className="border-b border-border bg-secondary px-6 py-4">
+      <header className="border-b border-border px-6 py-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <Button
               variant="ghost"
               size="icon"
-              onClick={() => navigate("/")}
+              onClick={() => navigate("/teacher")}
               className="h-9 w-9"
             >
               <ArrowLeft className="h-5 w-5" />
@@ -179,7 +234,7 @@ console.log(result);`);
 
             <div className="flex flex-1 overflow-auto scrollbar-thin">
               {/* Line Numbers */}
-              <div className="flex flex-col bg-code-bg py-4 pl-4 pr-2 text-right font-mono text-sm text-code-lineNumber select-none relative">
+              <div className="flex flex-col py-4 pl-4 pr-8 text-right font-mono text-sm text-code-lineNumber select-none relative">
                 {codeLines.map((_, i) => {
                   const lineNum = i + 1;
                   const activeStep = hoveredStep || selectedStep;
@@ -209,8 +264,9 @@ console.log(result);`);
                   
                   return step && color ? (
                     <div 
-                      className={`absolute left-0 right-0 ${color.bg} pointer-events-none transition-all duration-200 border-l-4 ${color.border}`}
+                      className={`absolute right-0 ${color.bg} pointer-events-none transition-all duration-200 border-l-4 ${color.border}`}
                       style={{ 
+                        left: '-8px',
                         top: `${((step.lineStart || 1) - 1) * 24 + 16}px`,
                         height: `${((step.lineEnd || 1) - (step.lineStart || 1) + 1) * 24}px`
                       }}
@@ -235,13 +291,35 @@ console.log(result);`);
           {/* Task Description */}
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Target className="h-5 w-5 text-primary" />
-                Task Description
-              </CardTitle>
-              <CardDescription>
-                AI-generated task overview (editable)
-              </CardDescription>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="flex items-center gap-2">
+                    <Target className="h-5 w-5 text-primary" />
+                    Task Description
+                  </CardTitle>
+                  <CardDescription>
+                    AI-generated task overview (editable)
+                  </CardDescription>
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleGenerateDescription}
+                  disabled={isGeneratingDescription}
+                >
+                  {isGeneratingDescription ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Generating...
+                    </>
+                  ) : (
+                    <>
+                      <Target className="mr-2 h-4 w-4" />
+                      Generate Description
+                    </>
+                  )}
+                </Button>
+              </div>
             </CardHeader>
             <CardContent>
               <Textarea
@@ -267,6 +345,24 @@ console.log(result);`);
                     AI-generated steps linked to code lines
                   </CardDescription>
                 </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleGenerateTasks}
+                  disabled={isGenerating}
+                >
+                  {isGenerating ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Generating...
+                    </>
+                  ) : (
+                    <>
+                      <Target className="mr-2 h-4 w-4" />
+                      Generate Tasks
+                    </>
+                  )}
+                </Button>
               </div>
             </CardHeader>
             <CardContent className="space-y-3">
@@ -275,7 +371,7 @@ console.log(result);`);
                 return (
                   <div key={step.id}>
                     <div
-                      className={`rounded-lg border-2 p-4 transition-all cursor-pointer ${
+                      className={`rounded-lg border-2 p-4 transition-all cursor-pointer backdrop-blur-md bg-white/40 dark:bg-slate-900/40 ${
                         selectedStep === step.id
                           ? `${color.border} ${color.bg}`
                           : hoveredStep === step.id
@@ -399,7 +495,7 @@ console.log(result);`);
                           type="button"
                           variant="ghost"
                           size="sm"
-                          onClick={addStep}
+                          onClick={() => addStepAfter(step.id)}
                           className="h-6 w-6 rounded-full p-0 hover:bg-primary/10"
                         >
                           <Plus className="h-4 w-4 text-primary" />
