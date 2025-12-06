@@ -28,8 +28,8 @@ interface AppContextType {
   setMessages: (messages: Message[] | ((prev: Message[]) => Message[])) => void;
   steps: Step[];
   setSteps: (steps: Step[]) => void;
-  currentStepIndex: number;
-  setCurrentStepIndex: (index: number) => void;
+  exerciseDescription: string;
+  setExerciseDescription: (description: string) => void;
   codeHighlight: CodeHighlight | null;
   setCodeHighlight: (highlight: CodeHighlight | null) => void;
   isStreaming: boolean;
@@ -88,12 +88,21 @@ const initialSteps: Step[] = [
   }
 ];
 
+const initialExerciseDescription = `In this exercise, you'll learn how to create and use functions in JavaScript. Your goal is to:
+- Create a function called 'greet' that takes a person's name as input
+- The function should create a greeting message with that name
+- Print the greeting to the console
+- Return the greeting so it can be used elsewhere
+- Call the function with a name and use the returned value
+
+Take your time and experiment! If you get stuck, click the "Get Help" button and I'll guide you without giving away the solution.`;
+
 const initialMessages: Message[] = [
   {
     id: 1,
     role: "assistant",
     content:
-      "Welcome! 👋 I'm your coding tutor. I see you're working on a greeting function. Would you like me to explain how it works?",
+      "Welcome! 👋 I'm your coding tutor. Read the exercise description above and start coding. If you need help, just click the 'Get Help' button and I'll guide you!",
     timestamp: new Date(),
   },
 ];
@@ -102,7 +111,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [code, setCode] = useState(initialCode);
   const [messages, setMessages] = useState<Message[]>(initialMessages);
   const [steps, setSteps] = useState<Step[]>(initialSteps);
-  const [currentStepIndex, setCurrentStepIndex] = useState(0);
+  const [exerciseDescription, setExerciseDescription] = useState(initialExerciseDescription);
   const [codeHighlight, setCodeHighlight] = useState<CodeHighlight | null>(null);
   const [isStreaming, setIsStreaming] = useState(false);
 
@@ -115,8 +124,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
         setMessages,
         steps,
         setSteps,
-        currentStepIndex,
-        setCurrentStepIndex,
+        exerciseDescription,
+        setExerciseDescription,
         codeHighlight,
         setCodeHighlight,
         isStreaming,

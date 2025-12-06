@@ -1,10 +1,11 @@
 import { useState, useRef, useEffect } from "react";
-import { Play, Copy, Check } from "lucide-react";
+import { Play, Copy, Check, BookOpen } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Editor from "@monaco-editor/react";
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable";
 import { useAppContext } from "@/contexts/AppContext";
 import type { editor as MonacoEditor } from "monaco-editor";
+import { Card, CardContent } from "@/components/ui/card";
 
 type LogEntry = {
   type: 'log' | 'error' | 'warn' | 'info' | 'system';
@@ -12,7 +13,7 @@ type LogEntry = {
 };
 
 const CodeEditor = () => {
-  const { code, setCode, codeHighlight } = useAppContext();
+  const { code, setCode, codeHighlight, exerciseDescription } = useAppContext();
   const [copied, setCopied] = useState(false);
   const [logs, setLogs] = useState<LogEntry[]>([]);
   const workerRef = useRef<Worker | null>(null);
@@ -111,6 +112,19 @@ const CodeEditor = () => {
 
   return (
     <div className="flex h-full flex-col bg-code-bg">
+      {/* Exercise Description */}
+      <Card className="m-4 border-primary/20 bg-gradient-to-r from-primary/5 to-blue-500/5">
+        <CardContent className="flex items-start gap-3 p-4">
+          <BookOpen className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
+          <div className="flex-1">
+            <h3 className="font-semibold text-foreground mb-2">Exercise</h3>
+            <p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-line">
+              {exerciseDescription}
+            </p>
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Editor Header */}
       <div className="flex items-center justify-between border-b border-border px-4 py-2">
         <div className="flex items-center gap-2">

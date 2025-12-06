@@ -1,10 +1,10 @@
 import { useState, useRef, useEffect } from "react";
-import { Send, Bot, User, CheckCircle2 } from "lucide-react";
+import { Send, Bot, User, HelpCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useAppContext } from "@/contexts/AppContext";
-import { streamChat, handleHighlightCode, checkTask } from "@/lib/ai";
+import { streamChat, handleHighlightCode, getLLMHelp } from "@/lib/ai";
 
 const ChatWindow = () => {
   const { 
@@ -15,13 +15,10 @@ const ChatWindow = () => {
     isStreaming, 
     setIsStreaming,
     steps,
-    currentStepIndex,
-    setCurrentStepIndex
+    exerciseDescription
   } = useAppContext();
   const [input, setInput] = useState("");
   const scrollRef = useRef<HTMLDivElement>(null);
-
-  const currentStep = steps[currentStepIndex];
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -29,31 +26,31 @@ const ChatWindow = () => {
     }
   }, [messages]);
 
-  const handleCheckTask = async () => {
-    if (isStreaming || !currentStep) return;
+  const handleGetHelp = async () => {
+    if (isStreaming) return;
 
     setIsStreaming(true);
     
-    // Add a system message indicating checking is in progress
-    const checkingMessageId = Date.now();
+    // Add a system message indicating help is being generated
+    const helpMessageId = Date.now();
     setMessages(prev => [...prev, {
-      id: checkingMessageId,
+      id: helpMessageId,
       role: "assistant",
-      content: "Checking your solution...",
+      content: "Let me take a look at your code and help you out...",
       timestamp: new Date()
     }]);
 
     let accumulatedContent = "";
 
     try {
-      
-      await checkTask(
+      await getLLMHelp(
         code,
-        currentStep.description,
+        exerciseDescription,
+        steps,
         (chunk) => {
           accumulatedContent += chunk;
           setMessages(prev => prev.map(msg => 
-            msg.id === checkingMessageId 
+            msg.id === helpMessageId 
               ? { ...msg, content: accumulatedContent }
               : msg
           ));
@@ -65,45 +62,21 @@ const ChatWindow = () => {
             setTimeout(() => setCodeHighlight(null), 5000);
           }
         },
-        (success) => {
+        () => {
           setIsStreaming(false);
-          if (success) {
-            if (currentStepIndex < steps.length - 1) {
-              setCurrentStepIndex(currentStepIndex + 1);
-              // Add a message about moving to the next task
-              setTimeout(() => {
-                setMessages(prev => [...prev, {
-                  id: Date.now(),
-                  role: "assistant",
-                  content: "Moving on to the next task!",
-                  timestamp: new Date()
-                }]);
-              }, 1000);
-            } else {
-              // All tasks completed
-              setTimeout(() => {
-                setMessages(prev => [...prev, {
-                  id: Date.now(),
-                  role: "assistant",
-                  content: "Congratulations! You've completed all tasks for this lesson! 🎉",
-                  timestamp: new Date()
-                }]);
-              }, 1000);
-            }
-          }
         },
         (error) => {
-          console.error("Check task error:", error);
+          console.error("Get help error:", error);
           setMessages(prev => prev.map(msg => 
-            msg.id === checkingMessageId 
-              ? { ...msg, content: "Sorry, I encountered an error while checking your code. Please try again." }
+            msg.id === helpMessageId 
+              ? { ...msg, content: "Sorry, I encountered an error while analyzing your code. Please try again." }
               : msg
           ));
           setIsStreaming(false);
         }
       );
     } catch (error) {
-      console.error("Error checking task:", error);
+      console.error("Error getting help:", error);
       setIsStreaming(false);
     }
   };
@@ -206,30 +179,28 @@ const ChatWindow = () => {
         </div>
       </div>
 
-      {/* Current Task Header */}
-      {currentStep && (
-        <div className="border-b border-border bg-muted/30 p-4">
-          <div className="flex items-start justify-between gap-4">
-            <div>
-              <h3 className="font-semibold text-foreground flex items-center gap-2">
-                <CheckCircle2 className="h-4 w-4 text-primary" />
-                Current Task ({currentStepIndex + 1}/{steps.length})
-              </h3>
-              <p className="mt-1 text-sm text-muted-foreground">
-                {currentStep.description}
-              </p>
-            </div>
-            <Button 
-              size="sm" 
-              onClick={handleCheckTask}
-              disabled={isStreaming}
-              className="shrink-0"
-            >
-              Check Solution
-            </Button>
+      {/* Help Button Section */}
+      <div className="border-b border-border bg-gradient-to-r from-amber-500/10 to-orange-500/10 p-4">
+        <div className="flex items-center justify-between gap-4">
+          <div className="flex-1">
+            <h3 className="font-semibold text-foreground flex items-center gap-2">
+              <HelpCircle className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+              Need Guidance?
+            </h3>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Stuck on something? I'll analyze your code and provide helpful hints!
+            </p>
           </div>
+          <Button 
+            size="sm" 
+            onClick={handleGetHelp}
+            disabled={isStreaming}
+            className="shrink-0 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white"
+          >
+            Get Help
+          </Button>
         </div>
-      )}
+      </div>
 
       {/* Messages */}
       <ScrollArea className="flex-1 p-4" ref={scrollRef}>

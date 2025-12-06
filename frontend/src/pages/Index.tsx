@@ -32,11 +32,11 @@ const Index = () => {
       {/* Main Content */}
       <main className="flex-1 overflow-hidden">
         <ResizablePanelGroup direction="horizontal" className="h-full">
-          <ResizablePanel defaultSize={67} minSize={30}>
+          <ResizablePanel defaultSize={60} minSize={35}>
             <CodeEditor />
           </ResizablePanel>
           <ResizableHandle className="w-1 bg-border transition-colors hover:bg-primary/50" />
-          <ResizablePanel defaultSize={33} minSize={25}>
+          <ResizablePanel defaultSize={40} minSize={30}>
             <ChatWindow />
           </ResizablePanel>
         </ResizablePanelGroup>

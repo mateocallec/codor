@@ -306,6 +306,81 @@ export function handleHighlightCode(args: Record<string, unknown>): CodeHighligh
   return highlight;
 }
 /**
+ * Provides helpful hints to students without giving away solutions
+ * Uses the task outline as internal context to guide students effectively
+ */
+export async function getLLMHelp(
+  code: string,
+  exerciseDescription: string,
+  tasksOutline: Step[],
+  onTextChunk: (text: string) => void,
+  onFunctionCall: (call: { name: string; args: Record<string, unknown> }) => void,
+  onComplete: () => void,
+  onError: (error: Error) => void
+) {
+  try {
+    const tasksContext = tasksOutline
+      .map((task, idx) => `${idx + 1}. ${task.description} (Lines ${task.lineStart}-${task.lineEnd})`)
+      .join('\n');
+
+    const prompt = `You are a helpful programming tutor. A student is working on this exercise:
+
+"${exerciseDescription}"
+
+Here is the student's current code:
+\`\`\`javascript
+${code}
+\`\`\`
+
+Internal context (DO NOT share these exact task descriptions with the student, use them only to understand the exercise structure):
+${tasksContext}
+
+The student has clicked "Get Help" because they're stuck or need guidance. Your job is to:
+1. Analyze their current code and compare it with what the exercise asks for
+2. Provide helpful hints and guidance WITHOUT giving away the solution or writing code for them
+3. You can:
+   - Point them to specific sections they should look at (use highlight_code tool)
+   - Remind them about parts of the exercise they might have missed
+   - Ask guiding questions to help them think through the problem
+   - Explain relevant concepts at a high level
+   - Suggest what they might want to try next
+4. NEVER write the actual solution code
+5. Encourage independent thinking and problem-solving
+
+Provide your guidance now:`;
+
+    const stream = await ai.models.generateContentStream({
+      model: "gemini-2.5-flash-lite",
+      contents: [{ role: 'user', parts: [{ text: prompt }] }],
+      config: {
+        tools: [{
+          functionDeclarations: [highlightCodeFunctionDeclaration]
+        }],
+        temperature: 0.8,
+      }
+    });
+
+    for await (const chunk of stream) {
+      const text = chunk.text;
+      if (text) {
+        onTextChunk(text);
+      }
+
+      const functionCalls = chunk.functionCalls;
+      if (functionCalls) {
+        for (const call of functionCalls) {
+          onFunctionCall({ name: call.name, args: call.args });
+        }
+      }
+    }
+
+    onComplete();
+  } catch (error) {
+    onError(error);
+  }
+}
+
+/**
  * Generates tasks from code and description using the generate_tasks tool
  */
 export async function generateTasks(code: string, description: string): Promise<Step[]> {
