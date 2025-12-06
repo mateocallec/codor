@@ -10,7 +10,7 @@ const Index = () => {
     <AppProvider>
       <div className="flex h-screen flex-col bg-background">
       {/* Header */}
-      <header className="flex items-center justify-between border-b border-border px-6 py-3 bg-secondary">
+      <header className="flex items-center justify-between border-b border-border px-6 py-3">
         <div className="flex items-center gap-3">
           <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-purple-600 to-blue-500">
             <Code className="h-5 w-5 text-white" />

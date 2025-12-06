@@ -97,10 +97,15 @@ export default {
             height: "0",
           },
         },
+        "gradient-rotate": {
+          "0%": { transform: "rotate(0deg)" },
+          "100%": { transform: "rotate(360deg)" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
+        "gradient-rotate": "gradient-rotate 4s linear infinite",
       },
     },
   },

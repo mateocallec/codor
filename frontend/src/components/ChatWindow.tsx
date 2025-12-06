@@ -99,9 +99,9 @@ const ChatWindow = () => {
   };
 
   return (
-    <div className="flex h-full flex-col bg-card">
+    <div className="flex h-full flex-col backdrop-blur-md bg-white/40 dark:bg-slate-900/40">
       {/* Chat Header */}
-      <div className="flex items-center gap-3 border-b border-border px-4 py-3">
+      <div className="flex items-center gap-3 border-b border-border px-4 py-3 backdrop-blur-lg bg-white/60 dark:bg-slate-900/60">
         <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary/20">
           <Bot className="h-5 w-5 text-primary" />
         </div>
@@ -167,7 +167,7 @@ const ChatWindow = () => {
           <Button
             onClick={handleSend}
             size="icon"
-            className="h-10 w-10 bg-primary text-primary-foreground hover:bg-primary/90"
+            className="h-10 w-10 bg-gradient-to-br from-purple-600 to-blue-500 text-white hover:from-purple-700 hover:to-blue-600 border-0"
             disabled={!input.trim()}
           >
             <Send className="h-4 w-4" />
