@@ -1,13 +1,23 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Code, ArrowLeft, User, Clock, MessageSquare, Award } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { useNavigate } from "react-router-dom";
+import { 
+  getExerciseInfo, 
+  getAllParticipantsWithDetails, 
+  getUserInfo,
+  parseExerciseContent,
+  type Participant,
+  type UserInfo
+} from "@/lib/api";
+import { Loader2 } from "lucide-react";
 
 interface StudentSubmission {
-  studentId: number;
+  studentId: string;
   studentName: string;
+  academicId: number;
   status: "completed" | "in-progress" | "not-started";
   score: number | null;
   timeSpent: string;
@@ -17,105 +27,108 @@ interface StudentSubmission {
     reason: string;
     points: number;
   }>;
+  hasContent: boolean;
 }
 
 interface Exercise {
-  id: number;
+  id: string;
   title: string;
   submissions: StudentSubmission[];
 }
 
-const mockExercises: Exercise[] = [
-  {
-    id: 1,
-    title: "Build a Greeting Function",
-    submissions: [
-      {
-        studentId: 1,
-        studentName: "Alex Chen",
-        status: "completed",
-        score: 95,
-        timeSpent: "25 min",
-        aiInteractions: 12,
-        commonIssues: [
-          "Initially forgot to return the greeting",
-          "Had trouble with string concatenation syntax",
-          "Needed help understanding function parameters"
-        ],
-        deductions: [
-          { reason: "Missing semicolon in line 3", points: 3 },
-          { reason: "Inefficient string concatenation method", points: 2 }
-        ]
-      },
-      {
-        studentId: 2,
-        studentName: "Maria Garcia",
-        status: "completed",
-        score: 88,
-        timeSpent: "32 min",
-        aiInteractions: 18,
-        commonIssues: [
-          "Struggled with console.log placement",
-          "Asked about the difference between return and console.log",
-          "Needed clarification on variable scope"
-        ],
-        deductions: [
-          { reason: "Incorrect variable naming convention", points: 4 },
-          { reason: "Missing error handling", points: 5 },
-          { reason: "Code not properly indented", points: 3 }
-        ]
-      },
-      {
-        studentId: 3,
-        studentName: "James Wilson",
-        status: "in-progress",
-        score: null,
-        timeSpent: "15 min",
-        aiInteractions: 8,
-        commonIssues: [
-          "Currently working on return statement",
-          "Asked about function naming conventions"
-        ]
-      }
-    ]
-  },
-  {
-    id: 2,
-    title: "Array Manipulation",
-    submissions: [
-      {
-        studentId: 1,
-        studentName: "Alex Chen",
-        status: "completed",
-        score: 92,
-        timeSpent: "40 min",
-        aiInteractions: 15,
-        commonIssues: [
-          "Needed help with array methods",
-          "Confused about map vs forEach"
-        ],
-        deductions: [
-          { reason: "Incorrect use of filter method", points: 5 },
-          { reason: "Mutation of original array", points: 3 }
-        ]
-      },
-      {
-        studentId: 2,
-        studentName: "Maria Garcia",
-        status: "not-started",
-        score: null,
-        timeSpent: "0 min",
-        aiInteractions: 0,
-        commonIssues: []
-      }
-    ]
-  }
-];
-
 const StudentProgress = () => {
   const navigate = useNavigate();
-  const [selectedExercise, setSelectedExercise] = useState<number | null>(1);
-  const [selectedStudent, setSelectedStudent] = useState<number | null>(null);
+  const [selectedExercise, setSelectedExercise] = useState<string | null>(null);
+  const [selectedStudent, setSelectedStudent] = useState<string | null>(null);
+  const [exercises, setExercises] = useState<Exercise[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // Load exercises on component mount
+  useEffect(() => {
+    loadExercises();
+  }, []);
+
+  const loadExercises = async () => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      // For demo purposes, we'll try to load from localStorage
+      // In production, you'd have a list of exercise IDs from the teacher's account
+      const lastExerciseId = localStorage.getItem('lastCreatedExerciseId');
+      const savedExerciseIds = localStorage.getItem('exerciseIds');
+      
+      const exerciseIds: string[] = [];
+      if (lastExerciseId) exerciseIds.push(lastExerciseId);
+      if (savedExerciseIds) {
+        try {
+          const ids = JSON.parse(savedExerciseIds);
+          exerciseIds.push(...ids.filter((id: string) => id !== lastExerciseId));
+        } catch (e) {
+          console.error('Failed to parse saved exercise IDs', e);
+        }
+      }
+
+      if (exerciseIds.length === 0) {
+        setError("No exercises found. Please create an exercise first.");
+        setIsLoading(false);
+        return;
+      }
+
+      // Load each exercise and its participants
+      const loadedExercises: Exercise[] = [];
+      
+      for (const exerciseId of exerciseIds) {
+        try {
+          const exerciseInfo = await getExerciseInfo(exerciseId);
+          const parsedContent = parseExerciseContent(exerciseInfo.content);
+          const participants = await getAllParticipantsWithDetails(exerciseId);
+
+          // Transform participants to submissions
+          const submissions: StudentSubmission[] = await Promise.all(
+            participants.map(async (participant) => {
+              let userInfo: UserInfo | null = null;
+              try {
+                userInfo = await getUserInfo(participant.sub);
+              } catch (e) {
+                console.error(`Failed to load user info for ${participant.sub}`, e);
+              }
+
+              return {
+                studentId: participant.sub,
+                studentName: `Student ${participant.academic_id}`, // We don't have names in the API
+                academicId: participant.academic_id,
+                status: participant.content ? "completed" : "not-started",
+                score: userInfo?.note ?? null,
+                timeSpent: "N/A", // Not available in API
+                aiInteractions: 0, // Not available in API
+                commonIssues: [], // Not available in API
+                hasContent: !!participant.content,
+              };
+            })
+          );
+
+          loadedExercises.push({
+            id: exerciseId,
+            title: parsedContent.title,
+            submissions,
+          });
+        } catch (e) {
+          console.error(`Failed to load exercise ${exerciseId}`, e);
+        }
+      }
+
+      setExercises(loadedExercises);
+      if (loadedExercises.length > 0 && !selectedExercise) {
+        setSelectedExercise(loadedExercises[0].id);
+      }
+    } catch (error) {
+      console.error("Failed to load exercises:", error);
+      setError(error instanceof Error ? error.message : "Failed to load exercises");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -137,7 +150,7 @@ const StudentProgress = () => {
     return "text-red-600 dark:text-red-400";
   };
 
-  const selectedExerciseData = mockExercises.find(e => e.id === selectedExercise);
+  const selectedExerciseData = exercises.find(e => e.id === selectedExercise);
   const selectedStudentData = selectedExerciseData?.submissions.find(s => s.studentId === selectedStudent);
 
   return (
@@ -168,10 +181,36 @@ const StudentProgress = () => {
 
       {/* Main Content */}
       <main className="flex flex-1 overflow-hidden">
+        {isLoading ? (
+          <div className="flex flex-1 items-center justify-center">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          </div>
+        ) : error ? (
+          <div className="flex flex-1 items-center justify-center">
+            <div className="text-center">
+              <p className="text-destructive mb-4">{error}</p>
+              <Button onClick={loadExercises}>Retry</Button>
+            </div>
+          </div>
+        ) : exercises.length === 0 ? (
+          <div className="flex flex-1 items-center justify-center">
+            <div className="text-center">
+              <Code className="mx-auto h-12 w-12 text-muted-foreground/50" />
+              <h3 className="mt-4 text-lg font-semibold text-foreground">No exercises found</h3>
+              <p className="mt-2 text-sm text-muted-foreground">
+                Create an exercise first to view student progress
+              </p>
+              <Button onClick={() => navigate("/teacher/upload")} className="mt-4">
+                Create Exercise
+              </Button>
+            </div>
+          </div>
+        ) : (
+          <>
         {/* Left Sidebar - Exercise List */}
         <div className="w-80 border-r border-border overflow-auto p-4 space-y-2">
           <h2 className="text-sm font-semibold text-muted-foreground mb-3 px-2">EXERCISES</h2>
-          {mockExercises.map((exercise) => (
+          {exercises.map((exercise) => (
             <Card
               key={exercise.id}
               className={`cursor-pointer transition-all hover:scale-[1.02] backdrop-blur-md bg-white/40 dark:bg-slate-900/40 ${
@@ -375,6 +414,8 @@ const StudentProgress = () => {
             </div>
           )}
         </div>
+          </>
+        )}
       </main>
     </div>
   );

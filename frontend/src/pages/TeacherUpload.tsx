@@ -9,6 +9,8 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 import { useNavigate } from "react-router-dom";
 import { Step as AIStep, generateTasks, generateDescription } from "@/lib/ai";
 import { Loader2 } from "lucide-react";
+import { createExercise, serializeExerciseContent } from "@/lib/api";
+import { useToast } from "@/hooks/use-toast";
 
 interface Step extends AIStep {
   id: number;
@@ -16,8 +18,10 @@ interface Step extends AIStep {
 
 const TeacherUpload = () => {
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [isGenerating, setIsGenerating] = useState(false);
   const [isGeneratingDescription, setIsGeneratingDescription] = useState(false);
+  const [isPublishing, setIsPublishing] = useState(false);
   const [title, setTitle] = useState("Build a Greeting Function");
   const [code, setCode] = useState(`function greet(name) {
   const greeting = "Hello, " + name + "!";
@@ -166,9 +170,57 @@ console.log(result);`);
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Task submitted:", { title, code, description, steps });
+    
+    if (!title.trim() || !code.trim() || !description.trim() || steps.length === 0) {
+      toast({
+        title: "Missing Information",
+        description: "Please fill in all fields and add at least one step.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsPublishing(true);
+    try {
+      // Serialize the exercise data
+      const content = serializeExerciseContent({
+        title,
+        code,
+        description,
+        steps: steps.map(({ description, lineStart, lineEnd }) => ({
+          description,
+          lineStart,
+          lineEnd,
+        })),
+      });
+
+      // Create the exercise on the backend
+      const exercise = await createExercise(content);
+
+      toast({
+        title: "Exercise Published!",
+        description: `Exercise created with ID: ${exercise.sub}`,
+      });
+
+      // Store the exercise ID in localStorage for easy access
+      localStorage.setItem('lastCreatedExerciseId', exercise.sub);
+
+      // Navigate back to teacher dashboard
+      setTimeout(() => {
+        navigate("/teacher");
+      }, 1500);
+    } catch (error) {
+      console.error("Failed to publish exercise:", error);
+      toast({
+        title: "Publication Failed",
+        description: error instanceof Error ? error.message : "Failed to create exercise",
+        variant: "destructive",
+      });
+    } finally {
+      setIsPublishing(false);
+    }
   };
 
   const codeLines = code.split("\n");

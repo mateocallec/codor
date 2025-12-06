@@ -2,16 +2,7 @@ import { useState, useRef } from "react";
 import { Play, Copy, Check, Bug } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-const sampleCode = `function greet(name) {
-  // This function greets the user
-  const message = "Hello, " + name + "!";
-  console.log(message);
-  return message;
-}
-
-// Call the function
-const result = greet("Learner");
-console.log(result);`;
+const sampleCode = ``;
 
 const CodeEditor = () => {
   const [code, setCode] = useState(sampleCode);

@@ -1,12 +1,34 @@
-import { Code, Plus, ClipboardList } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Code, Plus, ClipboardList, Copy, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { useNavigate } from "react-router-dom";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 const TeacherDashboard = () => {
   const navigate = useNavigate();
   const teacherName = "Sarah Johnson"; // This would come from auth context
+  const [lastExerciseId, setLastExerciseId] = useState<string | null>(null);
+  const [copiedLink, setCopiedLink] = useState(false);
+
+  useEffect(() => {
+    // Load last created exercise from localStorage
+    const exerciseId = localStorage.getItem('lastCreatedExerciseId');
+    setLastExerciseId(exerciseId);
+  }, []);
+
+  const getStudentLink = (exerciseId: string) => {
+    return `${window.location.origin}/?exercise_id=${exerciseId}`;
+  };
+
+  const handleCopyLink = (exerciseId: string) => {
+    const link = getStudentLink(exerciseId);
+    navigator.clipboard.writeText(link);
+    setCopiedLink(true);
+    setTimeout(() => setCopiedLink(false), 2000);
+  };
 
   return (
     <div className="flex h-screen flex-col relative overflow-hidden">
@@ -84,24 +106,63 @@ const TeacherDashboard = () => {
             </Card>
           </div>
 
+          {/* Last Created Exercise Link */}
+          {lastExerciseId && (
+            <Card>
+              <CardHeader>
+                <CardTitle>Share Exercise Link</CardTitle>
+                <CardDescription>
+                  Share this link with your students to access the latest exercise
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div className="space-y-2">
+                  <Label htmlFor="exercise-link">Student Access Link</Label>
+                  <div className="flex gap-2">
+                    <Input
+                      id="exercise-link"
+                      value={getStudentLink(lastExerciseId)}
+                      readOnly
+                      className="font-mono text-sm"
+                    />
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={() => handleCopyLink(lastExerciseId)}
+                    >
+                      {copiedLink ? (
+                        <Check className="h-4 w-4 text-green-600" />
+                      ) : (
+                        <Copy className="h-4 w-4" />
+                      )}
+                    </Button>
+                  </div>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Exercise ID: <code className="bg-muted px-1 py-0.5 rounded">{lastExerciseId}</code>
+                </p>
+              </CardContent>
+            </Card>
+          )}
+
           {/* Quick Stats */}
           <div className="grid gap-4 md:grid-cols-3">
             <Card>
               <CardHeader className="pb-3">
                 <CardDescription>Total Exercises</CardDescription>
-                <CardTitle className="text-3xl">12</CardTitle>
+                <CardTitle className="text-3xl">{lastExerciseId ? "1+" : "0"}</CardTitle>
               </CardHeader>
             </Card>
             <Card>
               <CardHeader className="pb-3">
                 <CardDescription>Active Students</CardDescription>
-                <CardTitle className="text-3xl">45</CardTitle>
+                <CardTitle className="text-3xl">-</CardTitle>
               </CardHeader>
             </Card>
             <Card>
               <CardHeader className="pb-3">
                 <CardDescription>Avg. Completion Rate</CardDescription>
-                <CardTitle className="text-3xl">87%</CardTitle>
+                <CardTitle className="text-3xl">-</CardTitle>
               </CardHeader>
             </Card>
           </div>

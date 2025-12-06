@@ -34,6 +34,12 @@ interface AppContextType {
   setCodeHighlight: (highlight: CodeHighlight | null) => void;
   isStreaming: boolean;
   setIsStreaming: (isStreaming: boolean) => void;
+  exerciseId: string | null;
+  setExerciseId: (id: string | null) => void;
+  userId: string | null;
+  setUserId: (id: string | null) => void;
+  academicId: number | null;
+  setAcademicId: (id: number | null) => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -114,6 +120,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [exerciseDescription, setExerciseDescription] = useState(initialExerciseDescription);
   const [codeHighlight, setCodeHighlight] = useState<CodeHighlight | null>(null);
   const [isStreaming, setIsStreaming] = useState(false);
+  const [exerciseId, setExerciseId] = useState<string | null>(null);
+  const [userId, setUserId] = useState<string | null>(null);
+  const [academicId, setAcademicId] = useState<number | null>(null);
 
   return (
     <AppContext.Provider
@@ -130,6 +139,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
         setCodeHighlight,
         isStreaming,
         setIsStreaming,
+        exerciseId,
+        setExerciseId,
+        userId,
+        setUserId,
+        academicId,
+        setAcademicId,
       }}
     >
       {children}
