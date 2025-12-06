@@ -64,9 +64,15 @@ const CodeEditor = () => {
 
   // Handle code highlighting from AI
   useEffect(() => {
-    if (!editorRef.current || !codeHighlight) return;
+    if (!editorRef.current) return;
 
     const editor = editorRef.current;
+
+    if (!codeHighlight) {
+      decorationsRef.current = editor.deltaDecorations(decorationsRef.current, []);
+      return;
+    }
+
     const { startLine, startColumn, endLine, endColumn } = codeHighlight;
 
     // Clear previous decorations

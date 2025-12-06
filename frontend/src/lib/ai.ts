@@ -84,6 +84,26 @@ const generateDescriptionFunctionDeclaration = {
   },
 };
 
+// Define the task_check_result tool for the model
+const taskCheckResultFunctionDeclaration = {
+  name: 'task_check_result',
+  description: 'Reports the result of checking whether a student has correctly completed a task. Use this after analyzing the student\'s code.',
+  parameters: {
+    type: Type.OBJECT,
+    properties: {
+      is_correct: {
+        type: Type.BOOLEAN,
+        description: 'Whether the task was completed correctly (true) or not (false).',
+      },
+      feedback: {
+        type: Type.STRING,
+        description: 'Feedback message to the student. If correct, provide congratulations. If incorrect, explain what is missing or wrong without giving the solution.',
+      },
+    },
+    required: ['is_correct', 'feedback'],
+  },
+};
+
 export interface Step {
   description: string;
   lineStart: number;
@@ -98,8 +118,78 @@ const SYSTEM_PROMPT = `You are a friendly and patient programming tutor helping 
 - Encourage students and build their confidence
 - Break down complex topics into digestible pieces
 - Ask guiding questions to help students think through problems
+- NEVER give the solution outright. Guide the student to the answer.
+- If the student asks for the solution, politely refuse and offer a hint instead.
 
 When explaining code, always use the highlight_code tool to show the specific lines you're discussing. This helps students follow along visually.`;
+
+export const checkTask = async (
+  code: string,
+  taskDescription: string,
+  onTextChunk: (text: string) => void,
+  onFunctionCall: (call: { name: string; args: any }) => void,
+  onComplete: (success: boolean) => void,
+  onError: (error: any) => void
+) => {
+  try {
+    const prompt = `
+    The student is working on the following task: "${taskDescription}"
+    
+    Here is their current code:
+    \`\`\`javascript
+    ${code}
+    \`\`\`
+    
+    Please check if the student has correctly completed the task.
+    
+    Analyze the code carefully and use the task_check_result tool to report your findings:
+    - Set is_correct to true if the task is completed correctly, false otherwise.
+    - Provide helpful feedback:
+      * If correct: Congratulate the student briefly.
+      * If incorrect: Explain what is missing or incorrect, and use the highlight_code tool to point out relevant lines. Do NOT give the solution code. Give hints and guidance.
+    `;
+
+    const stream = await ai.models.generateContentStream({
+      model: "gemini-2.5-flash-lite",
+      contents: [{ role: 'user', parts: [{ text: prompt }] }],
+      config: {
+        tools: [{
+          functionDeclarations: [highlightCodeFunctionDeclaration, taskCheckResultFunctionDeclaration]
+        }],
+      }
+    });
+
+    let isCorrect = false;
+    let hasReceivedResult = false;
+
+    for await (const chunk of stream) {
+      const text = chunk.text;
+      if (text) {
+        onTextChunk(text);
+      }
+
+      const functionCalls = chunk.functionCalls;
+      if (functionCalls) {
+        for (const call of functionCalls) {
+          if (call.name === 'task_check_result') {
+            isCorrect = call.args.is_correct as boolean;
+            hasReceivedResult = true;
+            // Send the feedback as a text chunk
+            if (call.args.feedback) {
+              onTextChunk(call.args.feedback as string);
+            }
+          } else {
+            onFunctionCall({ name: call.name, args: call.args });
+          }
+        }
+      }
+    }
+
+    onComplete(isCorrect);
+  } catch (error) {
+    onError(error);
+  }
+};
 
 export interface FunctionCallArgs {
   name: string;

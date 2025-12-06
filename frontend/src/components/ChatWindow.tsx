@@ -1,21 +1,112 @@
 import { useState, useRef, useEffect } from "react";
-import { Send, Bot, User } from "lucide-react";
+import { Send, Bot, User, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useAppContext } from "@/contexts/AppContext";
-import { streamChat, handleHighlightCode } from "@/lib/ai";
+import { streamChat, handleHighlightCode, checkTask } from "@/lib/ai";
 
 const ChatWindow = () => {
-  const { messages, setMessages, code, setCodeHighlight, isStreaming, setIsStreaming } = useAppContext();
+  const { 
+    messages, 
+    setMessages, 
+    code, 
+    setCodeHighlight, 
+    isStreaming, 
+    setIsStreaming,
+    steps,
+    currentStepIndex,
+    setCurrentStepIndex
+  } = useAppContext();
   const [input, setInput] = useState("");
   const scrollRef = useRef<HTMLDivElement>(null);
+
+  const currentStep = steps[currentStepIndex];
 
   useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
   }, [messages]);
+
+  const handleCheckTask = async () => {
+    if (isStreaming || !currentStep) return;
+
+    setIsStreaming(true);
+    
+    // Add a system message indicating checking is in progress
+    const checkingMessageId = Date.now();
+    setMessages(prev => [...prev, {
+      id: checkingMessageId,
+      role: "assistant",
+      content: "Checking your solution...",
+      timestamp: new Date()
+    }]);
+
+    let accumulatedContent = "";
+
+    try {
+      
+      await checkTask(
+        code,
+        currentStep.description,
+        (chunk) => {
+          accumulatedContent += chunk;
+          setMessages(prev => prev.map(msg => 
+            msg.id === checkingMessageId 
+              ? { ...msg, content: accumulatedContent }
+              : msg
+          ));
+        },
+        (functionCall) => {
+          if (functionCall.name === "highlight_code") {
+            const highlight = handleHighlightCode(functionCall.args);
+            setCodeHighlight(highlight);
+            setTimeout(() => setCodeHighlight(null), 5000);
+          }
+        },
+        (success) => {
+          setIsStreaming(false);
+          if (success) {
+            if (currentStepIndex < steps.length - 1) {
+              setCurrentStepIndex(currentStepIndex + 1);
+              // Add a message about moving to the next task
+              setTimeout(() => {
+                setMessages(prev => [...prev, {
+                  id: Date.now(),
+                  role: "assistant",
+                  content: "Moving on to the next task!",
+                  timestamp: new Date()
+                }]);
+              }, 1000);
+            } else {
+              // All tasks completed
+              setTimeout(() => {
+                setMessages(prev => [...prev, {
+                  id: Date.now(),
+                  role: "assistant",
+                  content: "Congratulations! You've completed all tasks for this lesson! 🎉",
+                  timestamp: new Date()
+                }]);
+              }, 1000);
+            }
+          }
+        },
+        (error) => {
+          console.error("Check task error:", error);
+          setMessages(prev => prev.map(msg => 
+            msg.id === checkingMessageId 
+              ? { ...msg, content: "Sorry, I encountered an error while checking your code. Please try again." }
+              : msg
+          ));
+          setIsStreaming(false);
+        }
+      );
+    } catch (error) {
+      console.error("Error checking task:", error);
+      setIsStreaming(false);
+    }
+  };
 
   const handleSend = async () => {
     if (!input.trim() || isStreaming) return;
@@ -114,6 +205,31 @@ const ChatWindow = () => {
           <span className="text-xs text-muted-foreground">Online</span>
         </div>
       </div>
+
+      {/* Current Task Header */}
+      {currentStep && (
+        <div className="border-b border-border bg-muted/30 p-4">
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <h3 className="font-semibold text-foreground flex items-center gap-2">
+                <CheckCircle2 className="h-4 w-4 text-primary" />
+                Current Task ({currentStepIndex + 1}/{steps.length})
+              </h3>
+              <p className="mt-1 text-sm text-muted-foreground">
+                {currentStep.description}
+              </p>
+            </div>
+            <Button 
+              size="sm" 
+              onClick={handleCheckTask}
+              disabled={isStreaming}
+              className="shrink-0"
+            >
+              Check Solution
+            </Button>
+          </div>
+        </div>
+      )}
 
       {/* Messages */}
       <ScrollArea className="flex-1 p-4" ref={scrollRef}>

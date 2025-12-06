@@ -143,6 +143,7 @@ console.log(result);`);
         id: index + 1
       }));
       setSteps(stepsWithIds);
+      console.log("Generated Steps:", stepsWithIds);
     } catch (error) {
       console.error("Failed to generate tasks:", error);
       // You might want to add a toast notification here
