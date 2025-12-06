@@ -49,3 +49,21 @@ function remove_storage_file(string $storage_id, string $file_name): bool {
 
     return true;
 }
+
+function read_storage_file(string $storage_id, string $file_name): string|false {
+    $file_path = "/storage/" . $storage_id . "/" . $file_name . ".txt";
+
+    if (!is_readable($file_path)) {
+        error_log("File not found or not readable: " . $file_path);
+        return false;
+    }
+
+    $file_content = file_get_contents($file_path);
+
+    if ($file_content === false) {
+        error_log("Failed to read content from file: " . $file_path);
+        return false;
+    }
+
+    return $file_content;
+}

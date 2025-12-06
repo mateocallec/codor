@@ -44,6 +44,8 @@ function getExerciseInfo($exercise_sub) {
 
     unset($exercise->id);
 
+    $exercise->content = "test";
+
     echo json_encode($exercise);
 }
 
