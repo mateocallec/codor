@@ -139,7 +139,7 @@ Receive contextual guidance without direct solutions
 # Intelligent Guidance System
 
 <div class="mt-6">
-  <img src="./images/guidance.png" class="mx-auto overflow-visible w-40" />
+  <img src="./images/guidance.png" class="mx-auto overflow-visible w-220" />
 </div>
 
 ---
